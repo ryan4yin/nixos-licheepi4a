@@ -45,7 +45,6 @@
             #  https://github.com/riscv-non-isa/riscv-toolchain-conventions/blob/master/README.mkd#specifying-the-target-abi-with--mabi
             gcc.abi = "lp64d";
 
-            config = "riscv64-unknown-linux-gnu";
             system = "riscv64-linux";
           };
         }
