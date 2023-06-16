@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-gcc11, kernel-src, nixpkgs, ... }: 
+{ config, lib, pkgs, pkgs-gcc13, kernel-src, nixpkgs, ... }: 
 
 {
 
@@ -13,7 +13,7 @@
   boot = {
     loader.grub.enable = false;
     loader.generic-extlinux-compatible.enable = true;
-    kernelPackages = pkgs-gcc11.linuxPackagesFor (pkgs-gcc11.callPackage ../pkgs/kernel.nix {
+    kernelPackages = pkgs-gcc13.linuxPackagesFor (pkgs-gcc13.callPackage ../pkgs/kernel.nix {
       src = kernel-src;
       kernelPatches = with pkgs.kernelPatches; [
         bridge_stp_helper

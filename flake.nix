@@ -17,9 +17,9 @@
       system = "x86_64-linux";
 
       specialArgs = inputs // {
-        pkgs-gcc11 = import nixpkgs {
+        pkgs-gcc13 = import nixpkgs {
           system = system;
-          overlays = [ (self: super: { gcc = self.gcc11; }) ];
+          overlays = [ (self: super: { gcc = self.gcc13; }) ];
         };
       };
       modules = [
