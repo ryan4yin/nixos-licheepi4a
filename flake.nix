@@ -13,10 +13,15 @@
 
   outputs = inputs@{ self, nixpkgs, ... }: {
     # cross-build
-    nixosConfigurations.lp4a-cross = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.lp4a-cross = nixpkgs.lib.nixosSystem rec {
       system = "x86_64-linux";
 
-      specialArgs = inputs;
+      specialArgs = inputs // {
+        pkgs-gcc11 = import nixpkgs {
+          system = system;
+          overlays = [ (self: super: { gcc = self.gcc11; }) ];
+        };
+      };
       modules = [
         {
           # cross-compilation this flake.
@@ -49,8 +54,6 @@
 
             system = "riscv64-linux";
           };
-
-          nixpkgs.overlays = import ./overlays inputs;
         }
 
         ./modules/licheepi4a.nix
@@ -74,8 +77,6 @@
 
             system = system;
           };
-
-          nixpkgs.overlays = import ./overlays inputs;
         }
         ./modules/licheepi4a.nix
       ];

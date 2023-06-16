@@ -112,7 +112,7 @@ Then run the following command to build:
 
 ```shell
 # build sdImage
-nix build .#nixosConfigurations.lp4a.config.system.build.sdImage
+nix build .#nixosConfigurations.lp4a-cross.config.system.build.sdImage
 # TODO get rootfs from sdImage
 ```
 
