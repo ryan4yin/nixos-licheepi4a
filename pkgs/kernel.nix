@@ -8,7 +8,7 @@ buildLinux (args // {
   version = "5.10.113";
 
   # according to https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
-  defconfig = "light_config";
+  defconfig = "light_defconfig";
 
   structuredExtraConfig = with lib.kernel; lib.mkForce {
     MEDIA_DIGITAL_TV_SUPPORT = no;
