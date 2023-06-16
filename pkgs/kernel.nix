@@ -12,6 +12,7 @@ buildLinux (args // {
 
   structuredExtraConfig = with lib.kernel; lib.mkForce {
     MEDIA_DIGITAL_TV_SUPPORT = no;
+    LIGHT_NET = no;
   };
 }) // (args.argsOverride or {})
 
