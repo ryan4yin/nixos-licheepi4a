@@ -37,6 +37,7 @@
             # LicheePi 4A is a high-performance development board which supports extension G and C.
             # we need to enable them to get revyos's kernel built.
             gcc.arch = "rv64gc";
+            gcc.abi = "rv64gc";
 
             config = "riscv64-unknown-linux-gnu";
             system = "riscv64-linux";
