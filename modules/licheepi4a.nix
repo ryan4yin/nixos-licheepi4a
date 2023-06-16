@@ -15,10 +15,10 @@
     loader.generic-extlinux-compatible.enable = true;
     kernelPackages = pkgs-gcc11.linuxPackagesFor (pkgs-gcc11.callPackage ../pkgs/kernel.nix {
       src = kernel-src;
-      # kernelPatches = with pkgs.kernelPatches; [
-      #   bridge_stp_helper
-      #   request_key_helper
-      # ];
+      kernelPatches = with pkgs.kernelPatches; [
+        bridge_stp_helper
+        request_key_helper
+      ];
     });
 
     # https://github.com/chainsx/fedora-riscv-builder/blob/51841d872b/config/config-emmc.txt
