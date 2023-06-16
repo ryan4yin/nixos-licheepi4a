@@ -56,7 +56,7 @@
     };
 
     # emulated-build
-    nixosConfigurations.lp4a-emulated = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.lp4a-emulated = nixpkgs.lib.nixosSystem rec {
       system = "riscv64-linux";
 
       specialArgs = inputs;
@@ -65,6 +65,8 @@
           nixpkgs.localSystem = {
             gcc.arch = "rv64gc";
             gcc.abi = "lp64d";
+
+            system = system;
           };
         }
         ./modules/licheepi4a.nix
