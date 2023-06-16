@@ -55,7 +55,10 @@
       ];
     };
 
-    # emulated-build
+    # emulated-build or native-build
+    # 
+    # NOTE: build using qemu-based emulated system is really slow...
+    #      it may takes about 5 hours to build the rootfs on R9-5900HX.
     nixosConfigurations.lp4a-emulated = nixpkgs.lib.nixosSystem rec {
       system = "riscv64-linux";
 
@@ -63,6 +66,7 @@
       modules = [
         {
           nixpkgs.localSystem = {
+            # add flags to gcc: `-march=rv64gc -mabi=lp64d`
             gcc.arch = "rv64gc";
             gcc.abi = "lp64d";
 

@@ -80,6 +80,8 @@ Projects & Docs related to LicheePi 4A:
 - unofficial u-boot
   - https://github.com/dlan17/u-boot/tree/th1520
   - https://github.com/chainsx/thead-u-boot/tree/lpi4a
+- unofficial kernel
+  - https://github.com/kangaroo/linux-lpi4a/tree/master
 - other docs
   - https://github.com/plctlab/PLCT-Weekly/blob/master/2023/2023-06-01.md
 
