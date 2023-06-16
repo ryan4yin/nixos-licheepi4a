@@ -12,7 +12,8 @@
   };
 
   outputs = inputs@{ self, nixpkgs, ... }: {
-    nixosConfigurations.lp4a = nixpkgs.lib.nixosSystem {
+    # cross-build
+    nixosConfigurations.lp4a-cross = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
       specialArgs = inputs;
@@ -22,6 +23,7 @@
           nixpkgs.crossSystem = {
             # https://nixos.wiki/wiki/Build_flags
             # this option equals to add `-march=rv64gc` into CFLAGS.
+            # CFLAGS will be used as the command line arguments for the gcc/clang.
             # 
             # A little more detail; 
             # RISC-V is a modular ISA, meaning that it only has a mandatory base, 
@@ -49,6 +51,18 @@
           };
         }
 
+        ./modules/licheepi4a.nix
+      ];
+    };
+
+    # emulated-build
+    nixosConfigurations.lp4a-emulated = nixpkgs.lib.nixosSystem {
+      gcc.arch = "rv64gc";
+      gcc.abi = "lp64d";
+      system = "riscv64-linux";
+
+      specialArgs = inputs;
+      modules = [
         ./modules/licheepi4a.nix
       ];
     };
