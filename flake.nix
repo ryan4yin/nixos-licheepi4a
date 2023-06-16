@@ -20,6 +20,7 @@
         {
           # cross-compilation this flake.
           nixpkgs.crossSystem = {
+            gcc.arch = "rv64gc";
             config = "riscv64-unknown-linux-gnu";
             system = "riscv64-linux";
           };
