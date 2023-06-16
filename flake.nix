@@ -49,6 +49,8 @@
 
             system = "riscv64-linux";
           };
+
+          nixpkgs.overlays = import ./overlays inputs;
         }
 
         ./modules/licheepi4a.nix
@@ -72,6 +74,8 @@
 
             system = system;
           };
+
+          nixpkgs.overlays = import ./overlays inputs;
         }
         ./modules/licheepi4a.nix
       ];
