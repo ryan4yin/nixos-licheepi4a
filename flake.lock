@@ -3,11 +3,11 @@
     "kernel-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1684840427,
-        "narHash": "sha256-6gBoxYA82QKtHH2mlsa8/TnrsLMUjwcpQCxLFduFA6I=",
+        "lastModified": 1686741655,
+        "narHash": "sha256-hy/UMt7aH5GWZc+fvZYgHumeMfSZHJH0ohFqsIsaHjw=",
         "owner": "revyos",
         "repo": "thead-kernel",
-        "rev": "b4474f77378a5c7ed17caf3066acb552e88168f4",
+        "rev": "7a1ebd4adb2fbf73db0c6d0ce114b2fff7a4f7bb",
         "type": "github"
       },
       "original": {
@@ -19,16 +19,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1686501370,
-        "narHash": "sha256-G0WuM9fqTPRc2URKP9Lgi5nhZMqsfHGrdEbrLvAPJcg=",
+        "lastModified": 1686921029,
+        "narHash": "sha256-J1bX9plPCFhTSh6E3TWn9XSxggBh/zDD4xigyaIQBy8=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "75a5ebf473cd60148ba9aec0d219f72e5cf52519",
+        "rev": "c7ff1b9b95620ce8728c0d7bd501c458e6da9e04",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-unstable",
+        "ref": "nixos-23.05",
         "repo": "nixpkgs",
         "type": "github"
       }

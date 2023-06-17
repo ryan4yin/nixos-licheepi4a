@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-gcc13, kernel-src, nixpkgs, ... }: 
+{ config, lib, pkgs, kernel-src, pkgsKernel, nixpkgs, ... }: 
 
 {
 
@@ -13,9 +13,9 @@
   boot = {
     loader.grub.enable = false;
     loader.generic-extlinux-compatible.enable = true;
-    kernelPackages = pkgs-gcc13.linuxPackagesFor (pkgs-gcc13.callPackage ../pkgs/kernel.nix {
+    kernelPackages = pkgsKernel.linuxPackagesFor (pkgsKernel.callPackage ../pkgs/kernel.nix {
       src = kernel-src;
-      kernelPatches = with pkgs.kernelPatches; [
+      kernelPatches = with pkgsKernel.kernelPatches; [
         bridge_stp_helper
         request_key_helper
       ];
@@ -66,10 +66,10 @@
     };
   };
 
-  # # allow missing modules, only enable this for testing!
-  # nixpkgs.overlays = [
-  #   (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
-  # ];
+  # allow missing modules, only enable this for testing!
+  nixpkgs.overlays = [
+    (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
+  ];
 
   hardware.enableRedistributableFirmware = true;
   powerManagement.cpuFreqGovernor = "ondemand";

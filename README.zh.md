@@ -139,6 +139,82 @@ sudo parted -s /dev/mmcblk0 "resizepart 3 -0"
 sudo resize2fs /dev/mmcblk0p3
 ```
 
+## 将 gcc 工具链替换为 T-Head 官方的
+
+最近遇到的各种问题，很多都是因为使用了 NixOS 的标准工具链导致的，到目前也没解决。
+
+通过 devShell 创建了一个 FHS 环境，用 T-Head 提供的工具链编译，发现完全不报错，但切换回 NixOS 的工具链就会有错误。
+
+所以还是决定直接使用 T-Head 提供的工具链，这样也能保证与官方的开发环境一致。
+
+那么现在的问题就是，如何替换掉 nixpkgs 中的交叉编译工具链？
+
+这里找到个配置 https://github.com/tattvam/nix-polarfire/blob/master/icicle-kit/default.nix
+
+```nix
+with import <nixpkgs> {
+  crossSystem = {
+    config = "riscv64-unknown-linux-gnu";
+  };
+  overlays = [ (self: super: { gcc = self.gcc11; }) ];
+};
+rec {
+
+  uboot-polarfire-icicle-kit = callPackage ./uboot { defconfig = "microchip_mpfs_icicle"; };
+  linux-polarfire-icicle-kit = callPackage ./linux { };
+}
+```
+
+通过 `nix repl` 验证了确实是 work 的：
+
+```shell
+› nix repl -f '<nixpkgs>'
+Welcome to Nix 2.13.3. Type :? for help.
+
+Loading installable ''...
+Added 17755 variables.
+
+# 通过 overlays 替换掉 gcc
+nix-repl> a = import <nixpkgs> {   crossSystem = {     config = "riscv64-unknown-linux-gnu";   };   overlays = [ (self: super: { gcc = self.gcc12; }) ]; }
+
+# 查看下 gcc 版本，确实改成 12.2 了
+nix-repl> a.pkgsCross.riscv64.stdenv.cc
+«derivation /nix/store/jjvvwnf3hzk71p65x1n8bah3hrs08bpf-riscv64-unknown-linux-gnu-stage-final-gcc-wrapper-12.2.0.drv»
+
+# 再看下未修改的 gcc 版本，还是 11.3
+nix-repl> pkgs.pkgsCross.riscv64.stdenv.cc
+«derivation /nix/store/pq3g0wq3yfc4hqrikr03ixmhqxbh35q7-riscv64-unknown-linux-gnu-stage-final-gcc-wrapper-11.3.0.drv»
+```
+
+那么如果我们要将 T-Head 的工具链使用上述 overlays 方式替换进来，现在得考虑下如何将 T-Head 工具链打包成一个 derivation。
+
+T-Head 的工具链用的是 gcc 10，查看下 gcc 10 的 derivation：
+
+https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/compilers/gcc/10/default.nix
+
+那么直接 override 掉 src 跟 version 咋样？看看效果：
+
+```nix
+pkgs-thead = import <nixpkgs> {
+  crossSystem = {
+    config = "riscv64-unknown-linux-gnu";
+  };
+  overlays = [
+    (self: super: {
+      gcc = self.gcc10.overrideAttrs {
+        version = "10.2.0";
+        src = fetchurl {
+          url = "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1663142514282/Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.6.1-20220906.tar.gz";
+          sha256 = "";  # 先不填，这样 Nix 会报错并提示正确的 sha256 值，然后 copy 过来就行。
+        };
+      };
+    })
+  ];
+}
+```
+
+最后还是失败了，t-head 只提供了二进制包，不是源代码，所以上面这种方法行不通。问了 NixOS 人形自动回答机器人 Nick Cao 大佬，结论是需要自己完全复现 gcc-unwrapper 的文件夹结构，非常繁琐麻烦，所以还是放弃了。
+
 ## See Also
 
 There are other efforts to bring NixOS to RISC-V:
