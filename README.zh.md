@@ -52,7 +52,7 @@ This repo contains the code to get NixOS running on LicheePi 4A.
 
 Projects & Docs related to LicheePi 4A:
 
-- official repo: https://github.com/sipeed/LicheePi4A/tree/pre-view
+- sipeed's official repo: https://github.com/sipeed/LicheePi4A/tree/pre-view
   - it uses revyos's kernel, u-boot and opensbi:
     - https://github.com/revyos/thead-kernel.git
     - https://github.com/revyos/thead-u-boot.git
@@ -60,6 +60,7 @@ Projects & Docs related to LicheePi 4A:
   - revyos's prebuilt binaries download link:
     - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
   - official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
+  - 根据火哥文章介绍，这个项目是目前唯一且确实能够启用板载 GPU 的系统，该操作系统项目基于 Debian 开发，默认提供了两个 rootfs 镜像，一个是基本功能的镜像，没有桌面环境；另一个默认提供了 xfce4 桌面环境的系统镜像，为用户提供 RISC-V 下 XFCE4 的桌面操作体验。
 - thead's repo, a demo project from thead:
   - https://gitee.com/thead-yocto/light_deploy_images
   - https://gitee.com/thead-yocto/xuantie-yocto

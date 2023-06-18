@@ -28,6 +28,7 @@
       };
       overlays = [
         (self: super: {
+          # try to override the default gcc to the one from T-head-Semi.
           # NixOS 22.11 uses gcc 10.4.0, the same as thead-gcc, see:
           #   https://github.com/NixOS/nixpkgs/blob/nixos-22.11/pkgs/development/compilers/gcc/10/default.nix
           gcc = super.gcc10.overrideAttrs  (finalAttrs: previousAttrs: {
