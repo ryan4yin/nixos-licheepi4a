@@ -2,7 +2,8 @@
   description = "NixOS running on LicheePi 4A";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs-kernel.url = "github:nixos/nixpkgs/nixos-22.11";
 
     # according to https://github.com/sipeed/LicheePi4A/blob/pre-view/.gitmodules
     kernel-src = {
@@ -18,10 +19,9 @@
 
   };
 
-  outputs = inputs@{ self, nixpkgs, thead-gcc, ... }: 
-  
+  outputs = inputs@{ self, nixpkgs, nixpkgs-kernel, thead-gcc, ... }: 
   let
-    pkgsKernel = import nixpkgs {
+    pkgsKernel = import nixpkgs-kernel {
       localSystem = "x86_64-linux";
       crossSystem = {
         config = "riscv64-unknown-linux-gnu";
@@ -66,7 +66,7 @@
             # 
             # LicheePi 4A is a high-performance development board which supports extension G and C.
             # we need to enable them to get revyos's kernel built.
-            # gcc.arch = "rv64gc";
+            gcc.arch = "rv64gc";
             # the same as `-mabi=lp64d` in CFLAGS.
             # 
             # lp64d: long, pointers are 64-bit. GPRs, 64-bit FPRs, and the stack are used for parameter passing.
@@ -84,15 +84,25 @@
     };
 
     devShells.x86_64-linux.default = let
-      pkgs = pkgsKernel;
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+      };
     in
+      # the code here is mainly copied from:
+      #   https://nixos.wiki/wiki/Linux_kernel#Embedded_Linux_Cross-compile_xconfig_and_menuconfig
       (pkgs.buildFHSUserEnv {
         name = "kernel-build-env";
         targetPkgs = pkgs_: (with pkgs_;
           [
             pkgconfig
             ncurses
-            gcc
+
+            # the unmodified gcc toolchain from nixpkgs.
+            # pkgsCross.riscv64.gccStdenv.cc
+
+            # the gcc toolchain from T-head-Semi.
+            #   TODO - it reports 'Segmentation fault (core dumped)' now.
+            pkgsKernel.gccStdenv.cc
           ]
           ++ pkgs.linux.nativeBuildInputs);
         runScript = pkgs.writeScript "init.sh" ''
