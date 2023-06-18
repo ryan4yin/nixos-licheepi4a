@@ -18,7 +18,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     git      # used by nix flakes
     wget
     curl
@@ -73,16 +73,16 @@
   ];
 
   # replace default editor with neovim
-  environment.variables.EDITOR = "nvim";
+  environment.variables.EDITOR = "vim";
 
   # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
-    settings = {
-      X11Forwarding = true;
-      PermitRootLogin = "no";         # disable root login
-      PasswordAuthentication = false; # disable password login
-    };
+    # settings = {
+    #   X11Forwarding = true;
+    #   PermitRootLogin = "no";         # disable root login
+    #   PasswordAuthentication = false; # disable password login
+    # };
     openFirewall = true;
   };
 

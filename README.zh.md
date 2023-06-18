@@ -75,6 +75,7 @@ Projects & Docs related to LicheePi 4A:
   - https://github.com/chainsx/thead-u-boot/tree/lpi4a
 - other docs
   - https://github.com/plctlab/PLCT-Weekly/blob/master/2023/2023-06-01.md
+  - [LicheePi 4A —— 这个小板有点意思（第一部分） - huoge](https://litterhougelangley.club/blog/2023/05/27/licheepi-4a-%e8%bf%99%e4%b8%aa%e5%b0%8f%e6%9d%bf%e6%9c%89%e7%82%b9%e6%84%8f%e6%80%9d%ef%bc%88%e7%ac%ac%e4%b8%80%e9%83%a8%e5%88%86%ef%bc%89/)
 
 已知信息：
 
@@ -190,30 +191,56 @@ nix-repl> pkgs.pkgsCross.riscv64.stdenv.cc
 
 T-Head 的工具链用的是 gcc 10，查看下 gcc 10 的 derivation：
 
-https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/compilers/gcc/10/default.nix
+https://github.com/NixOS/nixpkgs/blob/22.11/pkgs/development/compilers/gcc/10/default.nix
 
-那么直接 override 掉 src 跟 version 咋样？看看效果：
+以及 T-Head 开源的修改版 GCC 10::
+
+https://github.com/T-head-Semi/gcc/tree/xuantie-gcc-10.4.0
+
+刚好两个连版本号都一样，那么直接 override 掉 src 跟 version 咋样？看看效果：
 
 ```nix
-pkgs-thead = import <nixpkgs> {
-  crossSystem = {
-    config = "riscv64-unknown-linux-gnu";
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+
+    # https://github.com/T-head-Semi/gcc/tree/xuantie-gcc-10.4.0
+    thead-gcc = {
+      url = "github:T-head-Semi/gcc/xuantie-gcc-10.4.0";
+      flake = false;
+    };
   };
-  overlays = [
-    (self: super: {
-      gcc = self.gcc10.overrideAttrs {
-        version = "10.2.0";
-        src = fetchurl {
-          url = "https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource/1663142514282/Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.6.1-20220906.tar.gz";
-          sha256 = "";  # 先不填，这样 Nix 会报错并提示正确的 sha256 值，然后 copy 过来就行。
-        };
+
+  outputs = inputs@{ self, nixpkgs, thead-gcc, ... }:
+  let
+    pkgsKernel = import nixpkgs {
+      localSystem = "x86_64-linux";
+      crossSystem = {
+        config = "riscv64-unknown-linux-gnu";
       };
-    })
-  ];
+      overlays = [
+        (self: super: {
+          # NixOS 22.11 uses gcc 10.4.0, the same as thead-gcc, see:
+          #   https://github.com/NixOS/nixpkgs/blob/nixos-22.11/pkgs/development/compilers/gcc/10/default.nix
+          gcc = super.gcc10.overrideAttrs  (finalAttrs: previousAttrs: {
+            version = "10.4.0";
+            src = thead-gcc;
+          });
+        })
+      ];
+    };
+  in
+  {
+    # cross-build
+    nixosConfigurations.lp4a = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      # skip many contents here
+      # ......
+    };
 }
 ```
 
-最后还是失败了，t-head 只提供了二进制包，不是源代码，所以上面这种方法行不通。问了 NixOS 人形自动回答机器人 Nick Cao 大佬，结论是需要自己完全复现 gcc-unwrapper 的文件夹结构，非常繁琐麻烦，所以还是放弃了。
+测试仍在进行中，目前还不清楚效果如何。
 
 ## See Also
 

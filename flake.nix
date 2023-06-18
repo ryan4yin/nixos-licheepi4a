@@ -10,9 +10,15 @@
       flake = false;
     };
 
+    # https://github.com/T-head-Semi/gcc/tree/xuantie-gcc-10.4.0
+    thead-gcc = {
+      url = "github:T-head-Semi/gcc/xuantie-gcc-10.4.0";
+      flake = false;
+    };
+
   };
 
-  outputs = inputs@{ self, nixpkgs, ... }: 
+  outputs = inputs@{ self, nixpkgs, thead-gcc, ... }: 
   
   let
     pkgsKernel = import nixpkgs {
@@ -21,7 +27,14 @@
         config = "riscv64-unknown-linux-gnu";
       };
       overlays = [
-        (self: super: { gcc = super.gcc10; })
+        (self: super: {
+          # NixOS 22.11 uses gcc 10.4.0, the same as thead-gcc, see:
+          #   https://github.com/NixOS/nixpkgs/blob/nixos-22.11/pkgs/development/compilers/gcc/10/default.nix
+          gcc = super.gcc10.overrideAttrs  (finalAttrs: previousAttrs: {
+            version = "10.4.0";
+            src = thead-gcc;
+          });
+        })
       ];
     };
   in
@@ -52,7 +65,7 @@
             # 
             # LicheePi 4A is a high-performance development board which supports extension G and C.
             # we need to enable them to get revyos's kernel built.
-            gcc.arch = "rv64gc";
+            # gcc.arch = "rv64gc";
             # the same as `-mabi=lp64d` in CFLAGS.
             # 
             # lp64d: long, pointers are 64-bit. GPRs, 64-bit FPRs, and the stack are used for parameter passing.
@@ -72,25 +85,20 @@
     devShells.x86_64-linux.default = let
       pkgs = pkgsKernel;
     in
-      (pkgsKernel.buildFHSUserEnv {
+      (pkgs.buildFHSUserEnv {
         name = "kernel-build-env";
         targetPkgs = pkgs_: (with pkgs_;
           [
             pkgconfig
             ncurses
-            qt5.qtbase
             gcc
           ]
-          ++ pkgsKernel.linux.nativeBuildInputs);
-        runScript = pkgsKernel.writeScript "init.sh" ''
+          ++ pkgs.linux.nativeBuildInputs);
+        runScript = pkgs.writeScript "init.sh" ''
           export toolchain_tripe=riscv64-unknown-linux-gnu-
           export ARCH=riscv
-          export nproc=20
           export hardeningDisable=all
-          export PKG_CONFIG_PATH="${pkgs.ncurses.dev}/lib/pkgconfig:${pkgs.qt5.qtbase.dev}/lib/pkgconfig"
-          export QT_QPA_PLATFORM_PLUGIN_PATH="${pkgs.qt5.qtbase.bin}/lib/qt-${pkgs.qt5.qtbase.version}/plugins"
-          export QT_QPA_PLATFORMTHEME=qt5ct
-          export CFLAGS="-march=rv64gc -mabi=lp64d"
+          export PKG_CONFIG_PATH="${pkgs.ncurses.dev}/lib/pkgconfig:"
           exec bash
         '';
       }).env;
