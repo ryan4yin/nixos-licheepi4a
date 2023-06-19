@@ -86,7 +86,7 @@ Projects & Docs related to LicheePi 4A:
 - unofficial kernel
   - https://github.com/kangaroo/linux-lpi4a/tree/master
 - other docs
-  - https://github.com/plctlab/PLCT-Weekly/blob/master/2023/2023-06-01.md
+  - https://wiki.gentoo.org/wiki/User:Dlan/RISC-V/TH1520: descibes how to build and install gentoo for LicheePi 4A
 
 the basic idea is to use revyos's kernel, u-boot and opensbi, with a NixOS rootfs, to get NixOS running on LicheePi 4A.
 

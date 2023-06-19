@@ -75,7 +75,7 @@ Projects & Docs related to LicheePi 4A:
   - https://github.com/dlan17/u-boot/tree/th1520
   - https://github.com/chainsx/thead-u-boot/tree/lpi4a
 - other docs
-  - https://github.com/plctlab/PLCT-Weekly/blob/master/2023/2023-06-01.md
+  - https://wiki.gentoo.org/wiki/User:Dlan/RISC-V/TH1520: descibes how to build and install gentoo for LicheePi 4A
   - [LicheePi 4A —— 这个小板有点意思（第一部分） - huoge](https://litterhougelangley.club/blog/2023/05/27/licheepi-4a-%e8%bf%99%e4%b8%aa%e5%b0%8f%e6%9d%bf%e6%9c%89%e7%82%b9%e6%84%8f%e6%80%9d%ef%bc%88%e7%ac%ac%e4%b8%80%e9%83%a8%e5%88%86%ef%bc%89/)
 
 已知信息：
