@@ -33,27 +33,10 @@
         "type": "github"
       }
     },
-    "nixpkgs-kernel": {
-      "locked": {
-        "lastModified": 1687254173,
-        "narHash": "sha256-0aqawK5KoB7S5hxv7eNx7jy3b74wfMxy+o1j2WJx4Gw=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "c37fe2b6b91a94e2f9d782b0feb706031d7d5868",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-23.05-small",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "kernel-src": "kernel-src",
-        "nixpkgs": "nixpkgs",
-        "nixpkgs-kernel": "nixpkgs-kernel"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
