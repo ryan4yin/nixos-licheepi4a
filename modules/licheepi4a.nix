@@ -13,17 +13,14 @@
   boot = {
     loader.grub.enable = false;
     loader.generic-extlinux-compatible.enable = true;
-    kernelPackages = 
-      let 
-        pkgs = pkgsKernel;
-      in
-        pkgs.linuxPackagesFor (pkgs.callPackage ../pkgs/kernel.nix {
+    kernelPackages = pkgsKernel.linuxPackagesFor (pkgsKernel.callPackage ../pkgs/kernel.nix {
         src = kernel-src;
-        kernelPatches = with pkgs.kernelPatches; [
+        stdenv = pkgsKernel.gcc13Stdenv;
+        kernelPatches = with pkgsKernel.kernelPatches; [
           bridge_stp_helper
           request_key_helper
         ];
-    });
+      });
 
     # https://github.com/chainsx/fedora-riscv-builder/blob/51841d872b/config/config-emmc.txt
     kernelParams = [

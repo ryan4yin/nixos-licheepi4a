@@ -21,7 +21,6 @@
   src,
   stdenv,
   linuxManualConfig,
-  ubootTools,
   ...
 }:
 (linuxManualConfig {

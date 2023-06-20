@@ -19,32 +19,32 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1686921029,
-        "narHash": "sha256-J1bX9plPCFhTSh6E3TWn9XSxggBh/zDD4xigyaIQBy8=",
+        "lastModified": 1687254173,
+        "narHash": "sha256-0aqawK5KoB7S5hxv7eNx7jy3b74wfMxy+o1j2WJx4Gw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "c7ff1b9b95620ce8728c0d7bd501c458e6da9e04",
+        "rev": "c37fe2b6b91a94e2f9d782b0feb706031d7d5868",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-23.05",
+        "ref": "nixos-23.05-small",
         "repo": "nixpkgs",
         "type": "github"
       }
     },
     "nixpkgs-kernel": {
       "locked": {
-        "lastModified": 1686929285,
-        "narHash": "sha256-WGtVzn+vGMPTXDO0DMNKVFtf+zUSqeW+KKk4Y/Ae99I=",
+        "lastModified": 1687254173,
+        "narHash": "sha256-0aqawK5KoB7S5hxv7eNx7jy3b74wfMxy+o1j2WJx4Gw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "93fddcf640ceca0be331210ba3101cee9d91c13d",
+        "rev": "c37fe2b6b91a94e2f9d782b0feb706031d7d5868",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-22.11",
+        "ref": "nixos-23.05-small",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -53,25 +53,7 @@
       "inputs": {
         "kernel-src": "kernel-src",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-kernel": "nixpkgs-kernel",
-        "thead-gcc": "thead-gcc"
-      }
-    },
-    "thead-gcc": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1683901109,
-        "narHash": "sha256-dn/YgM5Y/GLkUXsKQGjncr/eK+9VZI0WR1GVG+YxpzQ=",
-        "owner": "T-head-Semi",
-        "repo": "gcc",
-        "rev": "43bf5dad2bf52a3734021b6a5286411d5b636199",
-        "type": "github"
-      },
-      "original": {
-        "owner": "T-head-Semi",
-        "ref": "xuantie-gcc-10.4.0",
-        "repo": "gcc",
-        "type": "github"
+        "nixpkgs-kernel": "nixpkgs-kernel"
       }
     }
   },
