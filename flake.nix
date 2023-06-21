@@ -17,6 +17,7 @@
   outputs = inputs@{ 
     self
     ,nixpkgs
+    ,kernel-src
     ,... }: 
   let
     pkgsKernel = import nixpkgs {
@@ -27,6 +28,8 @@
         # https://nixos.wiki/wiki/Build_flags
         # this option equals to add `-march=rv64gc` into CFLAGS.
         # CFLAGS will be used as the command line arguments for the gcc/clang.
+        # 
+        # Note: CFLAGS is not used by the kernel build system! so this would not work for the kernel build.
         # 
         # A little more detail; 
         # RISC-V is a modular ISA, meaning that it only has a mandatory base, 
@@ -45,12 +48,27 @@
 
         # the same as `-mabi=lp64d` in CFLAGS.
         # 
+        # Note: CFLAGS is not used by the kernel build system! so this would not work for the kernel build.
+        # 
         # lp64d: long, pointers are 64-bit. GPRs, 64-bit FPRs, and the stack are used for parameter passing.
         # 
         # related docs:
         #  https://github.com/riscv-non-isa/riscv-toolchain-conventions/blob/master/README.mkd#specifying-the-target-abi-with--mabi
         gcc.abi = "lp64d";
       };
+
+      overlays = [
+        (self: super: {
+          linuxPackages_thead = super.linuxPackagesFor (super.callPackage ./pkgs/kernel.nix {
+            src = kernel-src;
+            stdenv = super.gcc13Stdenv;
+            kernelPatches = with super.kernelPatches; [
+              bridge_stp_helper
+              request_key_helper
+            ];
+          });
+        })
+      ];
     };
   in
   {
@@ -58,7 +76,9 @@
     nixosConfigurations.lp4a = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
-      specialArgs = inputs // { inherit pkgsKernel;};
+      specialArgs = {
+        inherit nixpkgs pkgsKernel;
+      };
       modules = [
         {
           # cross-compilation this flake.
@@ -71,7 +91,18 @@
       ];
     };
 
-    devShells.x86_64-linux.default = let
+    # the custom kernel for LicheePi 4A
+    # use `nix develop` to enter the environment with the custom kernel build environment available.
+    # and then use `unpackPhase` to unpack the kernel source code and cd into it.
+    # then you can use `make menuconfig` to configure the kernel.
+    # 
+    # problem
+    #   - using `make menuconfig` - Unable to find the ncurses package.
+    #   - using `make light_defconfig` - awk not found.
+    packages.x86_64-linux.default = pkgsKernel.linuxPackages_thead.kernel.dev;
+
+    # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.
+    devShells.x86_64-linux.fhsEnv = let
       pkgs = import nixpkgs {
         system = "x86_64-linux";
       };
@@ -82,16 +113,26 @@
         name = "kernel-build-env";
         targetPkgs = pkgs_: (with pkgs_;
           [
+            # we need theses packages to run `make menuconfig` successfully.
             pkgconfig
             ncurses
-            pkgsKernel.gccStdenv.cc
+
+            pkgsKernel.gcc13Stdenv.cc
+            gcc
           ]
           ++ pkgs.linux.nativeBuildInputs);
         runScript = pkgs.writeScript "init.sh" ''
-          export toolchain_tripe=riscv64-unknown-linux-gnu-
+          # set the cross-compilation environment variables.
+          export CROSS_COMPILE=riscv64-unknown-linux-gnu-
           export ARCH=riscv
-          export hardeningDisable=all
           export PKG_CONFIG_PATH="${pkgs.ncurses.dev}/lib/pkgconfig:"
+
+          # set the CFLAGS and CPPFLAGS to enable the rv64gc and lp64d.
+          # as described here:
+          #   https://github.com/graysky2/kernel_compiler_patch#alternative-way-to-define-a--march-option-without-this-patch
+          export KCFLAGS=' -march=rv64gc -mabi=lp64d'
+          export KCPPFLAGS=' -march=rv64gc -mabi=lp64d'
+
           exec bash
         '';
       }).env;

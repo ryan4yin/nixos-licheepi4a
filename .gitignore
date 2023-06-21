@@ -8,4 +8,5 @@ result-*
 *.swp
 
 # Personal scripts
-/nix-build
+nix-build/
+outputs/
