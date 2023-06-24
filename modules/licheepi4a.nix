@@ -53,6 +53,14 @@
     "ext4"
   ];
 
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-label/NIXOS_SD";
+      fsType = "ext4";
+      options = ["noatime"];
+    };
+  };
+
   # allow missing modules, only enable this for testing!
   # nixpkgs.overlays = [
   #   (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
@@ -64,4 +72,5 @@
   environment.systemPackages = with pkgs; [
     mtdutils
   ];
+
 }
