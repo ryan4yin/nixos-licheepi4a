@@ -308,6 +308,12 @@ bootargs=console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw ea
 
 看内容跟前面 NixOS 生成的 `extlinux.conf` 文件内容差不多，可以研究下。
 
+如果是要生成 config.txt 的话，这个 arm64 的模版应该可以参考：
+
+https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix
+
+https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-aarch64.nix
+
 ## See Also
 
 There are other efforts to bring NixOS to RISC-V:

@@ -1,5 +1,6 @@
 { config, modulesPath, ... }: {
 
+  # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image.nix
   imports = [
     "${modulesPath}/installer/sd-card/sd-image.nix"
   ];
