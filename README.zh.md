@@ -71,22 +71,16 @@ LicheePi 4A 的官方教程：
 根据如上 LicheePi 4A 相关文档，应该有三个分区镜像：
 
 - u-boot-with-spl-lpi4a.bin: 刷入到 spl 分区的 u-boot 引导程序，与 NixOS 无关
-- boot.ext4: boot 分区，包含 dtb、kernel image、opensbi 等文件，与 NixOS 同样无关
+- boot.ext4: boot 分区，包含 dtb、kernel image、opensbi 等文件，需要与 NixOS 一起构建
 - rootfs.ext4: rootfs 分区，包含 NixOS 的根文件系统，只有这个分区与 NixOS 有关
 
-u-boot-with-spl-lpi4a.bin 与 boot.ext4 都可直接从这里下载由中科院软件研究所提供的二进制文件：
+u-boot-with-spl-lpi4a.bin 可直接从这里下载由中科院软件研究所提供的二进制文件：
 
 - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
 
-那么，只要我们能构建出 NixOS 可用的 rootfs.ext4 分区，就可以在 LicheePi 4A 上运行 NixOS 了。
+那么，只要我们能构建出 NixOS 可用的 boot.ext4 跟 rootfs.ext4 分区，就可以在 LicheePi 4A 上运行 NixOS 了。
 
-## build rootfs
-
-Before building, we need to enable riscv64-linux emulation on the host machine, for example, on NixOS, add the following line to system configuration:
-
-```nix
-boot.binfmt.emulatedSystems = [ "riscv64-linux" ];
-```
+## 构建 boot 与 rootfs
 
 Build sdImage(wich may take a long time, about 2 hours on my machine):
 
@@ -102,8 +96,11 @@ Extrace rootfs from sdImage:
 # mount the image
 sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
 
+# extract the boot partition
+sudo dd if=/dev/loop0p2 of=boot.ext4 bs=1M status=progress
+
 # extract the rootfs partition
-sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
+sudo dd if=/dev/loop0p3 of=rootfs.ext4 bs=1M status=progress
 
 # umount the image
 sudo losetup -d /dev/loop0
@@ -142,7 +139,7 @@ dd if=${IMG_FILE} of=rootfs.ext4 bs=512 skip=77824 count=3711720
 
 > 内核开发板不支持从 SD 卡启动，只能从 eMMC 启动！
 
-构建好 rootfs 后我们就拥有了完整的三部分镜像，根据官方文档，内测版 LP4A 硬件的刷入流程如下：
+构建好 boot 跟 rootfs 后我们就拥有了完整的三部分镜像，根据官方文档，内测版 LP4A 硬件的刷入流程如下：
 
 1. 按住板上的 BOOT 按键不放，然后插入 USB-C 线缆上电（线缆另一头接 PC ），即可进入 USB 烧录模式（fastboot）。
    1. 在 Linux 下，使用 `lsusb` 查看设备，会显示以下设备： `ID 2345:7654 T-HEAD USB download gadget`
@@ -168,6 +165,120 @@ sudo fastboot flash root rootfs.ext4
 sudo parted -s /dev/mmcblk0 "resizepart 3 -0"
 sudo resize2fs /dev/mmcblk0p3
 ```
+
+## 记录下一些分析流程
+
+rootfs 已经成功构建完成，内容如下：
+
+```shell
+╭───┬───────────────────────┬──────┬──────────┬──────────────╮
+│ # │         name          │ type │   size   │   modified   │
+├───┼───────────────────────┼──────┼──────────┼──────────────┤
+│ 0 │ boot                  │ dir  │   4.1 KB │ 53 years ago │
+│ 1 │ lost+found            │ dir  │  16.4 KB │ 53 years ago │
+│ 2 │ nix                   │ dir  │   4.1 KB │ 53 years ago │
+│ 3 │ nix-path-registration │ file │ 242.7 KB │ 53 years ago │
+╰───┴───────────────────────┴──────┴──────────┴──────────────╯
+```
+
+可以看到 NixOS 对系统真的是清理得很彻底，整个根目录下一共就两个文件夹 `/boot` 跟 `/nix/store`.
+
+仔细看下 `/boot` 的内容，因为现在要对它进行修改：
+
+```shell
+› tree
+.
+├── extlinux
+│   └── extlinux.conf
+└── nixos
+    ├── rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-dtbs
+    │   ├── sifive
+    │   │   └── hifive-unleashed-a00.dtb
+    │   └── thead
+    │       ├── fire-emu-crash.dtb
+    │       ├── fire-emu.dtb
+    │       ├── fire-emu-gpu-dpu-dsi0.dtb
+    │       ├── fire-emu-soc-base.dtb
+    │       ├── fire-emu-soc-c910x4.dtb
+    │       ├── fire-emu-vi-dsp-vo.dtb
+    │       ├── fire-emu-vi-vp-vo.dtb
+    │       ├── ice.dtb
+    │       ├── light-ant-discrete-crash.dtb
+    │       ├── light-ant-discrete.dtb
+    │       ├── light-ant-ref-crash.dtb
+    │       ├── light-ant-ref.dtb
+    │       ├── light-a-product.dtb
+    │       ├── light-a-ref-dsi0.dtb
+    │       ├── light-a-ref-dsi0-hdmi.dtb
+    │       ├── light-a-ref.dtb
+    │       ├── light-a-val-android.dtb
+    │       ├── light-a-val-audio.dtb
+    │       ├── light-a-val-audio-hdmi.dtb
+    │       ├── light-a-val-crash.dtb
+    │       ├── light-a-val-ddr1G.dtb
+    │       ├── light-a-val-ddr2G.dtb
+    │       ├── light-a-val-dpi0-dpi1.dtb
+    │       ├── light-a-val-dpi0.dtb
+    │       ├── light-a-val-dsi0-dsi1.dtb
+    │       ├── light-a-val-dsi0.dtb
+    │       ├── light-a-val-dsi0-hdmi.dtb
+    │       ├── light-a-val-dsi1.dtb
+    │       ├── light-a-val.dtb
+    │       ├── light-a-val-full.dtb
+    │       ├── light-a-val-gpio-keys.dtb
+    │       ├── light-a-val-hdmi.dtb
+    │       ├── light-a-val-iso7816.dtb
+    │       ├── light-a-val-khv.dtb
+    │       ├── light-a-val-miniapp-hdmi.dtb
+    │       ├── light-a-val-nand.dtb
+    │       ├── light-a-val-npu-fce.dtb
+    │       ├── light-a-val-sec.dtb
+    │       ├── light-a-val-sv.dtb
+    │       ├── light-a-val-wcn.dtb
+    │       ├── light-beagle.dtb
+    │       ├── light-b-power.dtb
+    │       ├── light-b-product-crash.dtb
+    │       ├── light-b-product-ddr1G.dtb
+    │       ├── light-b-product.dtb
+    │       ├── light-b-product-miniapp-hdmi.dtb
+    │       ├── light-b-ref.dtb
+    │       ├── light-fm-emu-audio.dtb
+    │       ├── light-fm-emu-dsi0-hdmi.dtb
+    │       ├── light-fm-emu-dsp.dtb
+    │       ├── light-fm-emu.dtb
+    │       ├── light-fm-emu-gpu.dtb
+    │       ├── light-fm-emu-hdmi.dtb
+    │       ├── light-fm-emu-npu-fce.dtb
+    │       ├── light-lpi4a-ddr2G.dtb
+    │       ├── light-lpi4a.dtb
+    │       └── light_mpw.dtb
+    ├── rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-Image
+    └── vh8624bjxdpxh7ds3nqvqbx992yx63hp-initrd-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-initrd
+
+5 directories, 61 files
+```
+
+对照一下 revyos 官方的 boot 分区内容，应该就比较能理解，需要添加些啥了：
+
+```shell
+› tree
+.
+├── config-5.10.113-gfac22a756532
+├── fw_dynamic.bin
+├── Image
+├── kernel-commitid
+├── light_aon_fpga.bin
+├── light_c906_audio.bin
+├── light-lpi4a.dtb
+├── System.map-5.10.113-gfac22a756532
+└── vmlinuz-5.10.113-gfac22a756532
+```
+
+其中几个固件名称很熟悉，看了下果然这里就有： https://github.com/chainsx/fedora-riscv-builder/tree/main/firmware
+
+现在要解决的就是，把 NixOS 的 `/boot` 单独拆分成一个分区，`/` 中只留一个空文件夹作为挂载点，然后参照 revyos 的 boot 分区，将相关的驱动文件复制到新的 boot 分区中。
+
+还有就是，NixOS 的 Image 跟 initrd 文件名称都非常长，可能要研究下怎么配置 uboot 使它能够识别到。
 
 ## See Also
 

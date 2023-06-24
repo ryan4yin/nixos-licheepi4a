@@ -6,6 +6,10 @@
 
 This repo contains the code to get NixOS running on LicheePi 4A.
 
+## TODO
+
+- [ ] generate boot partition in sdImage
+
 ## Parameters
 
 <table>
@@ -71,22 +75,16 @@ the basic idea is to use revyos's kernel, u-boot and opensbi, with a NixOS rootf
 We need 3 parts of images:
 
 - u-boot-with-spl-lpi4a.bin: the u-boot-loader which will be flashed into spl partition, not related to NixOS
-- boot.ext4: the boot partition, contains dtb, kernel image, opensbi, etc, not related to NixOS
+- boot.ext4: the boot partition, contains dtb, kernel image, opensbi, etc, we need to build it with NixOS,
 - rootfs.ext4: the rootfs partition, we need to build it with NixOS
 
-we can download the prebuilt u-boot-with-spl-lpi4a.bin and boot.ext4 from here:
+We can download the prebuilt u-boot-with-spl-lpi4a.bin from here:
 
 - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
 
-## Build rootfs
+## Build boot & rootfs
 
-Before building, we need to enable riscv64-linux emulation on the host machine, for example, on NixOS, add the following line to system configuration:
-
-```nix
-boot.binfmt.emulatedSystems = [ "riscv64-linux" ];
-```
-
-Build sdImage(wich may take a long time, about 2 hours on my machine):
+Build sdImage(which may take a long time, about 2 hours on my machine):
 
 ```shell
 nix build .#nixosConfigurations.lp4a.config.system.build.sdImage --keep-failed
@@ -98,8 +96,11 @@ Extrace rootfs from sdImage:
 # mount the image
 sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
 
+# extract the boot partition
+sudo dd if=/dev/loop0p2 of=boot.ext4 bs=1M status=progress
+
 # extract the rootfs partition
-sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
+sudo dd if=/dev/loop0p3 of=rootfs.ext4 bs=1M status=progress
 
 # umount the image
 sudo losetup -d /dev/loop0
@@ -122,12 +123,12 @@ According to the official docs, the flash process of the internal test version L
 # flash u-boot into spl partition
 sudo fastboot flash ram u-boot-with-spl-lpi4a-20230510.bin
 sudo fastboot reboot
-
 # flash uboot partition
 sudo fastboot flash uboot u-boot-with-spl-lpi4a-20230510.bin
-# flash boot partition
-sudo fastboot flash boot  boot-20230510-230240.ext4
-# flash rootfs partition
+
+# flash nixos's boot partition
+sudo fastboot flash boot  boot.ext4
+# flash nixos's rootfs partition
 sudo fastboot flash root rootfs.ext4
 ```
 
