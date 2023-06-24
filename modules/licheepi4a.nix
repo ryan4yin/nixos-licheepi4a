@@ -8,6 +8,7 @@
 
   imports = [
     ./base.nix
+    ./rootfs.nix
   ];
 
   boot = {
@@ -52,18 +53,10 @@
     "ext4"
   ];
 
-  fileSystems = {
-    "/" = {
-      device = "/dev/disk/by-label/nixos";
-      fsType = "ext4";
-      options = ["noatime"];
-    };
-  };
-
   # allow missing modules, only enable this for testing!
-  nixpkgs.overlays = [
-    (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
-  ];
+  # nixpkgs.overlays = [
+  #   (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
+  # ];
 
   hardware.enableRedistributableFirmware = true;
   powerManagement.cpuFreqGovernor = "ondemand";
@@ -71,12 +64,4 @@
   environment.systemPackages = with pkgs; [
     mtdutils
   ];
-  
-  # build an SD image, by the command:
-  #   nix build .#
-  system.build.sdImage = import "${nixpkgs}/nixos/lib/make-disk-image.nix" {
-    name = "licheepi4a-sd-image";
-    copyChannel = false;
-    inherit config lib pkgs;
-  };
 }
