@@ -5,6 +5,8 @@
   ];
 
   sdImage = {
+    # for local usage, do not need to compress it.
+    # compressImage = false;
     populateFirmwareCommands = "";
     populateRootCommands = ''
       mkdir -p ./files/boot

@@ -1,6 +1,6 @@
 # NixOS on LicheePi 4A
 
-> :warning: Work in progress, use at your own risk...
+> work in progress, not working yet
 
 [[中文]](./README.zh.md)
 
@@ -60,33 +60,19 @@ This repo contains the code to get NixOS running on LicheePi 4A.
 
 ## References
 
-Projects & Docs related to LicheePi 4A:
+LicheePi 4A use RevyOS officially.
 
-- official repo: https://github.com/sipeed/LicheePi4A/tree/pre-view
-  - it uses revyos's kernel, u-boot and opensbi:
-    - https://github.com/revyos/thead-kernel.git
-    - https://github.com/revyos/thead-u-boot.git
-    - https://github.com/revyos/thead-opensbi.git
-  - revyos's prebuilt binaries download link:
-    - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
-  - official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
-- thead's repo, a demo project from thead:
-  - https://gitee.com/thead-yocto/light_deploy_images
-  - https://gitee.com/thead-yocto/xuantie-yocto
-  - https://gitee.com/thead-yocto/documents
-  - official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_thead.html
-- unofficial armbian/ubuntu/fedora:
-  - https://github.com/chainsx/fedora-riscv-builder
-  - https://github.com/chainsx/armbian-riscv-build
-- unofficial deepin & openkylin
-  - https://github.com/aiminickwong/licheepi4a-images
-- unofficial u-boot
-  - https://github.com/dlan17/u-boot/tree/th1520
-  - https://github.com/chainsx/thead-u-boot/tree/lpi4a
-- unofficial kernel
-  - https://github.com/kangaroo/linux-lpi4a/tree/master
-- other docs
-  - https://wiki.gentoo.org/wiki/User:Dlan/RISC-V/TH1520: descibes how to build and install gentoo for LicheePi 4A
+RevyOS's kernel, u-boot and opensbi:
+
+- https://github.com/revyos/thead-kernel.git
+- https://github.com/revyos/thead-u-boot.git
+- https://github.com/revyos/thead-opensbi.git
+
+RevyOS's prebuilt binaries download link:
+
+- https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
+
+Official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
 
 the basic idea is to use revyos's kernel, u-boot and opensbi, with a NixOS rootfs, to get NixOS running on LicheePi 4A.
 
@@ -108,12 +94,23 @@ Before building, we need to enable riscv64-linux emulation on the host machine, 
 boot.binfmt.emulatedSystems = [ "riscv64-linux" ];
 ```
 
-Then run the following command to build:
+Build sdImage(wich may take a long time, about 2 hours on my machine):
 
 ```shell
-# build sdImage
-nix build .#nixosConfigurations.lp4a-cross.config.system.build.sdImage
-# TODO get rootfs from sdImage
+nix build .#nixosConfigurations.lp4a.config.system.build.sdImage --keep-failed
+```
+
+Extrace rootfs from sdImage:
+
+```shell
+# mount the image
+sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
+
+# extract the rootfs partition
+sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
+
+# umount the image
+sudo losetup -d /dev/loop0
 ```
 
 ## flash images

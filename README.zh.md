@@ -1,6 +1,6 @@
 # NixOS on LicheePi 4A
 
-> :warning: WIP 项目仍在开发中，请自行评估使用风险...
+> WIP 目前还没有成功启动
 
 This repo contains the code to get NixOS running on LicheePi 4A.
 
@@ -50,63 +50,91 @@ This repo contains the code to get NixOS running on LicheePi 4A.
 
 ## References
 
-Projects & Docs related to LicheePi 4A:
+LicheePi 4A 官方主要支持 RevyOS，根据火哥文章介绍，它也是目前唯一且确实能够启用板载 GPU 的系统，
+该操作系统项目基于 Debian 开发，默认提供了两个 rootfs 镜像，一个是基本功能的镜像，没有桌面环境；
+另一个默认提供了 xfce4 桌面环境的系统镜像，为用户提供 RISC-V 下 XFCE4 的桌面操作体验。
 
-- sipeed's official repo: https://github.com/sipeed/LicheePi4A/tree/pre-view
-  - it uses revyos's kernel, u-boot and opensbi:
-    - https://github.com/revyos/thead-kernel.git
-    - https://github.com/revyos/thead-u-boot.git
-    - https://github.com/revyos/thead-opensbi.git
-  - revyos's prebuilt binaries download link:
-    - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
-  - official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
-  - 根据火哥文章介绍，这个项目是目前唯一且确实能够启用板载 GPU 的系统，该操作系统项目基于 Debian 开发，默认提供了两个 rootfs 镜像，一个是基本功能的镜像，没有桌面环境；另一个默认提供了 xfce4 桌面环境的系统镜像，为用户提供 RISC-V 下 XFCE4 的桌面操作体验。
-- thead's repo, a demo project from thead:
-  - https://gitee.com/thead-yocto/light_deploy_images
-  - https://gitee.com/thead-yocto/xuantie-yocto
-  - https://gitee.com/thead-yocto/documents
-  - official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_thead.html
-- unofficial armbian/ubuntu/fedora:
-  - https://github.com/chainsx/fedora-riscv-builder
-  - https://github.com/chainsx/armbian-riscv-build
-- unofficial deepin & openkylin
-  - https://github.com/aiminickwong/licheepi4a-images
-- unofficial u-boot
-  - https://github.com/dlan17/u-boot/tree/th1520
-  - https://github.com/chainsx/thead-u-boot/tree/lpi4a
-- other docs
-  - https://github.com/plctlab/PLCT-Weekly/blob/master/2023/2023-06-01.md
-  - [LicheePi 4A —— 这个小板有点意思（第一部分） - huoge](https://litterhougelangley.club/blog/2023/05/27/licheepi-4a-%e8%bf%99%e4%b8%aa%e5%b0%8f%e6%9d%bf%e6%9c%89%e7%82%b9%e6%84%8f%e6%80%9d%ef%bc%88%e7%ac%ac%e4%b8%80%e9%83%a8%e5%88%86%ef%bc%89/)
+RevyOS 的内核、u-boot 和 opensbi 代码仓库：
 
-已知信息：
+- https://github.com/revyos/thead-kernel.git
+- https://github.com/revyos/thead-u-boot.git
+- https://github.com/revyos/thead-opensbi.git
 
-- 平头哥官方提供的工具链基于 Linux 5.10 内核: https://gitee.com/thead-yocto
-- 根据如上 LicheePi 4A 相关文档，应该有三个分区镜像：
-  - u-boot-with-spl-lpi4a.bin: 刷入到 spl 分区的 u-boot 引导程序，与 NixOS 无关
-  - boot.ext4: boot 分区，包含 dtb、kernel image、opensbi 等文件，与 NixOS 同样无关
-  - rootfs.ext4: rootfs 分区，包含 NixOS 的根文件系统，只有这个分区与 NixOS 有关
-- u-boot-with-spl-lpi4a.bin 与 boot.ext4 都可直接从这里下载由中科院软件研究所提供的二进制文件：
-  - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
+RevyOS 的预构建镜像下载地址
+
+- https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
+
+LicheePi 4A 的官方教程：
+
+- https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
+
+根据如上 LicheePi 4A 相关文档，应该有三个分区镜像：
+
+- u-boot-with-spl-lpi4a.bin: 刷入到 spl 分区的 u-boot 引导程序，与 NixOS 无关
+- boot.ext4: boot 分区，包含 dtb、kernel image、opensbi 等文件，与 NixOS 同样无关
+- rootfs.ext4: rootfs 分区，包含 NixOS 的根文件系统，只有这个分区与 NixOS 有关
+
+u-boot-with-spl-lpi4a.bin 与 boot.ext4 都可直接从这里下载由中科院软件研究所提供的二进制文件：
+
+- https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
 
 那么，只要我们能构建出 NixOS 可用的 rootfs.ext4 分区，就可以在 LicheePi 4A 上运行 NixOS 了。
 
-## rootfs 构建
+## build rootfs
 
-构建前，需要先在宿主机启用 riscv64-linux 模拟，以 NixOS 为例，系统配置中添加如下一行：
+Before building, we need to enable riscv64-linux emulation on the host machine, for example, on NixOS, add the following line to system configuration:
 
 ```nix
 boot.binfmt.emulatedSystems = [ "riscv64-linux" ];
 ```
 
-然后使用如下命令执行构建：
+Build sdImage(wich may take a long time, about 2 hours on my machine):
 
 ```shell
-# build sdImage
-nix build .#nixosConfigurations.lp4a.config.system.build.sdImage
-# TODO get rootfs from sdImage
+nix build .#nixosConfigurations.lp4a.config.system.build.sdImage --keep-failed
 ```
 
-构建用时：5 + 00:16 =>
+Extrace rootfs from sdImage:
+
+方法一：
+
+```shell
+# mount the image
+sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
+
+# extract the rootfs partition
+sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
+
+# umount the image
+sudo losetup -d /dev/loop0
+```
+
+方法二：
+
+```shell
+IMG_FILE=$(result/sd-image/nixos-sd-image-*.img)
+
+# check the partition of sdImage
+› fdisk -lu ${IMG_FILE}
+Disk result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img: 1.81 GiB, 1940246528 bytes, 3789544 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x2178694e
+
+Device                                                                   Boot Start     End Sectors  Size Id Type
+result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img1      16384   77823   61440   30M  b W95 FAT32
+result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img2 *    77824 3789543 3711720  1.8G 83 Linux
+
+# extract the rootfs partition
+# the rootfs' partition start from 77824 sector, and each sector is 512 bytes
+# the command's format is
+#    dd if=[image] of=[partition] bs=512 skip=Start count=Sectors
+dd if=${IMG_FILE} of=rootfs.ext4 bs=512 skip=77824 count=3711720
+```
+
+得到的内容应该都是一样的。
 
 ## 镜像烧录到 eMMC
 
@@ -140,108 +168,6 @@ sudo fastboot flash root rootfs.ext4
 sudo parted -s /dev/mmcblk0 "resizepart 3 -0"
 sudo resize2fs /dev/mmcblk0p3
 ```
-
-## 将 gcc 工具链替换为 T-Head 官方的
-
-最近遇到的各种问题，很多都是因为使用了 NixOS 的标准工具链导致的，到目前也没解决。
-
-通过 devShell 创建了一个 FHS 环境，用 T-Head 提供的工具链编译，发现完全不报错，但切换回 NixOS 的工具链就会有错误。
-
-所以还是决定直接使用 T-Head 提供的工具链，这样也能保证与官方的开发环境一致。
-
-那么现在的问题就是，如何替换掉 nixpkgs 中的交叉编译工具链？
-
-这里找到个配置 https://github.com/tattvam/nix-polarfire/blob/master/icicle-kit/default.nix
-
-```nix
-with import <nixpkgs> {
-  crossSystem = {
-    config = "riscv64-unknown-linux-gnu";
-  };
-  overlays = [ (self: super: { gcc = self.gcc11; }) ];
-};
-rec {
-
-  uboot-polarfire-icicle-kit = callPackage ./uboot { defconfig = "microchip_mpfs_icicle"; };
-  linux-polarfire-icicle-kit = callPackage ./linux { };
-}
-```
-
-通过 `nix repl` 验证了确实是 work 的：
-
-```shell
-› nix repl -f '<nixpkgs>'
-Welcome to Nix 2.13.3. Type :? for help.
-
-Loading installable ''...
-Added 17755 variables.
-
-# 通过 overlays 替换掉 gcc
-nix-repl> a = import <nixpkgs> {   crossSystem = {     config = "riscv64-unknown-linux-gnu";   };   overlays = [ (self: super: { gcc = self.gcc12; }) ]; }
-
-# 查看下 gcc 版本，确实改成 12.2 了
-nix-repl> a.pkgsCross.riscv64.stdenv.cc
-«derivation /nix/store/jjvvwnf3hzk71p65x1n8bah3hrs08bpf-riscv64-unknown-linux-gnu-stage-final-gcc-wrapper-12.2.0.drv»
-
-# 再看下未修改的 gcc 版本，还是 11.3
-nix-repl> pkgs.pkgsCross.riscv64.stdenv.cc
-«derivation /nix/store/pq3g0wq3yfc4hqrikr03ixmhqxbh35q7-riscv64-unknown-linux-gnu-stage-final-gcc-wrapper-11.3.0.drv»
-```
-
-那么如果我们要将 T-Head 的工具链使用上述 overlays 方式替换进来，现在得考虑下如何将 T-Head 工具链打包成一个 derivation。
-
-T-Head 的工具链用的是 gcc 10，查看下 gcc 10 的 derivation：
-
-https://github.com/NixOS/nixpkgs/blob/22.11/pkgs/development/compilers/gcc/10/default.nix
-
-以及 T-Head 开源的修改版 GCC 10::
-
-https://github.com/T-head-Semi/gcc/tree/xuantie-gcc-10.4.0
-
-刚好两个连版本号都一样，那么直接 override 掉 src 跟 version 咋样？看看效果：
-
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
-
-    # https://github.com/T-head-Semi/gcc/tree/xuantie-gcc-10.4.0
-    thead-gcc = {
-      url = "github:T-head-Semi/gcc/xuantie-gcc-10.4.0";
-      flake = false;
-    };
-  };
-
-  outputs = inputs@{ self, nixpkgs, thead-gcc, ... }:
-  let
-    pkgsKernel = import nixpkgs {
-      localSystem = "x86_64-linux";
-      crossSystem = {
-        config = "riscv64-unknown-linux-gnu";
-      };
-      overlays = [
-        (self: super: {
-          # NixOS 22.11 uses gcc 10.4.0, the same as thead-gcc, see:
-          #   https://github.com/NixOS/nixpkgs/blob/nixos-22.11/pkgs/development/compilers/gcc/10/default.nix
-          gcc = super.gcc10.overrideAttrs  (finalAttrs: previousAttrs: {
-            version = "10.4.0";
-            src = thead-gcc;
-          });
-        })
-      ];
-    };
-  in
-  {
-    # cross-build
-    nixosConfigurations.lp4a = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      # skip many contents here
-      # ......
-    };
-}
-```
-
-测试仍在进行中，目前还不清楚效果如何。
 
 ## See Also
 
