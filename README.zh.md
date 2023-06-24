@@ -96,11 +96,11 @@ Extrace rootfs from sdImage:
 # mount the image
 sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
 
-# extract the boot partition
-sudo dd if=/dev/loop0p2 of=boot.ext4 bs=1M status=progress
+# mount the image
+sudo losetup -P --show -f $(ls result/sd-image/nixos-*-riscv64-linux.img)
 
 # extract the rootfs partition
-sudo dd if=/dev/loop0p3 of=rootfs.ext4 bs=1M status=progress
+sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
 
 # umount the image
 sudo losetup -d /dev/loop0
@@ -306,7 +306,15 @@ kernel_file=Image
 bootargs=console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd
 ```
 
+https://github.com/revyos/revyos/wiki/%E6%89%8B%E5%8A%A8%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8---Maunally-Build-Kernel#%E4%B8%AD%E6%96%87
+
 看内容跟前面 NixOS 生成的 `extlinux.conf` 文件内容差不多，可以研究下。
+
+如果是要生成 config.txt 的话，这个 arm64 的模版应该可以参考：
+
+https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix
+
+https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-aarch64.nix
 
 ## See Also
 

@@ -1,22 +1,5 @@
 {
   "nodes": {
-    "kernel-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1687607314,
-        "narHash": "sha256-9R+XY18uDuMWjVzLkg4lTmxDltsvyI51qvm34SNVI4I=",
-        "owner": "revyos",
-        "repo": "thead-kernel",
-        "rev": "9c58afc7addc5a4a5deef24dfe6a4a103549d3da",
-        "type": "github"
-      },
-      "original": {
-        "owner": "revyos",
-        "ref": "lpi4a",
-        "repo": "thead-kernel",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1687573514,
@@ -35,8 +18,43 @@
     },
     "root": {
       "inputs": {
-        "kernel-src": "kernel-src",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "thead-kernel": "thead-kernel",
+        "thead-opensbi": "thead-opensbi"
+      }
+    },
+    "thead-kernel": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1687607314,
+        "narHash": "sha256-9R+XY18uDuMWjVzLkg4lTmxDltsvyI51qvm34SNVI4I=",
+        "owner": "revyos",
+        "repo": "thead-kernel",
+        "rev": "9c58afc7addc5a4a5deef24dfe6a4a103549d3da",
+        "type": "github"
+      },
+      "original": {
+        "owner": "revyos",
+        "ref": "lpi4a",
+        "repo": "thead-kernel",
+        "type": "github"
+      }
+    },
+    "thead-opensbi": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1681291286,
+        "narHash": "sha256-VH3F7ZFH4FHLlKG19sA0F3tWC8BliYTkpK0Fd+bZwGk=",
+        "owner": "revyos",
+        "repo": "thead-opensbi",
+        "rev": "d98da90a19b5c71a5865ae17c8b2d8d210e78f19",
+        "type": "github"
+      },
+      "original": {
+        "owner": "revyos",
+        "ref": "lpi4a",
+        "repo": "thead-opensbi",
+        "type": "github"
       }
     }
   },

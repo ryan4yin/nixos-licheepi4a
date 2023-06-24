@@ -94,13 +94,10 @@ Extrace rootfs from sdImage:
 
 ```shell
 # mount the image
-sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
-
-# extract the boot partition
-sudo dd if=/dev/loop0p2 of=boot.ext4 bs=1M status=progress
+sudo losetup -P --show -f $(ls result/sd-image/nixos-*-riscv64-linux.img)
 
 # extract the rootfs partition
-sudo dd if=/dev/loop0p3 of=rootfs.ext4 bs=1M status=progress
+sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
 
 # umount the image
 sudo losetup -d /dev/loop0
@@ -121,10 +118,10 @@ According to the official docs, the flash process of the internal test version L
 
 ```shell
 # flash u-boot into spl partition
-sudo fastboot flash ram u-boot-with-spl-lpi4a-20230510.bin
+sudo fastboot flash ram u-boot-with-spl.bin
 sudo fastboot reboot
 # flash uboot partition
-sudo fastboot flash uboot u-boot-with-spl-lpi4a-20230510.bin
+sudo fastboot flash uboot u-boot-with-spl.bin
 
 # flash nixos's boot partition
 sudo fastboot flash boot  boot.ext4

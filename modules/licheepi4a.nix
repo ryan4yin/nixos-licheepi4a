@@ -8,6 +8,7 @@
 
   imports = [
     ./base.nix
+    ./hardware.nix
     ./rootfs.nix
   ];
 
@@ -40,10 +41,6 @@
     ];
   };
 
-  # https://github.com/revyos/thead-kernel/blob/lpi4a/arch/riscv/boot/dts/thead/light-lpi4a.dts
-  # https://github.com/chainsx/fedora-riscv-builder/blob/51841d872b/config/config-emmc.txt
-  hardware.deviceTree.name = "thead/light-lpi4a.dtb";
-
   systemd.services."serial-getty@hvc0" = {
     enable = false;
   };
@@ -56,21 +53,10 @@
     "btrfs"
   ];
 
-  fileSystems = {
-    "/" = {
-      device = "/dev/disk/by-label/NIXOS_SD";
-      fsType = "ext4";
-      options = ["noatime"];
-    };
-  };
-
   # allow missing modules, only enable this for testing!
   # nixpkgs.overlays = [
   #   (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
   # ];
-
-  hardware.enableRedistributableFirmware = true;
-  powerManagement.cpuFreqGovernor = "ondemand";
 
   environment.systemPackages = with pkgs; [
     mtdutils
