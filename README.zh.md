@@ -256,6 +256,22 @@ rootfs 已经成功构建完成，内容如下：
     └── vh8624bjxdpxh7ds3nqvqbx992yx63hp-initrd-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-initrd
 
 5 directories, 61 files
+
+› cat extlinux.conf
+# Generated file, all changes will be lost on nixos-rebuild!
+
+# Change this to e.g. nixos-42 to temporarily boot to an older configuration.
+DEFAULT nixos-default
+
+MENU TITLE ------------------------------------------------------------
+TIMEOUT 50
+
+LABEL nixos-default
+  MENU LABEL NixOS - Default
+  LINUX ../nixos/rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-Image
+  INITRD ../nixos/vh8624bjxdpxh7ds3nqvqbx992yx63hp-initrd-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-initrd
+  APPEND init=/nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37/init console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd loglevel=4
+  FDT ../nixos/rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-dtbs/thead/light-lpi4a.dtb
 ```
 
 对照一下 revyos 官方的 boot 分区内容，应该就比较能理解，需要添加些啥了：
@@ -289,6 +305,8 @@ fdt_file=light-lpi4a.dtb
 kernel_file=Image
 bootargs=console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd
 ```
+
+看内容跟前面 NixOS 生成的 `extlinux.conf` 文件内容差不多，可以研究下。
 
 ## See Also
 
