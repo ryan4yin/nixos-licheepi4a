@@ -59,7 +59,7 @@
 
       overlays = [
         (self: super: {
-          linuxPackages_thead = super.linuxPackagesFor (super.callPackage ./pkgs/kernel.nix {
+          linuxPackages_thead = super.linuxPackagesFor (super.callPackage ./pkgs/kernel {
             src = kernel-src;
             stdenv = super.gcc13Stdenv;
             kernelPatches = with super.kernelPatches; [

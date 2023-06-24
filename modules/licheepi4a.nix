@@ -1,4 +1,4 @@
-{ config, lib, pkgs, nixpkgs, pkgsKernel, ... }: 
+{ lib, pkgs, pkgsKernel, ... }: 
 
 {
 
