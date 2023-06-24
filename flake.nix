@@ -98,7 +98,7 @@
     # 
     # problem
     #   - using `make menuconfig` - Unable to find the ncurses package.
-    #   - using `make light_defconfig` - awk not found.
+    #   - using `make revyos_defconfig` - awk not found.
     packages.x86_64-linux.default = pkgsKernel.linuxPackages_thead.kernel.dev;
 
     # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.

@@ -14,7 +14,7 @@
 #   # according to https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
 #   # specify the deconfig(default kernel configuration) file located under:
 #   #   https://github.com/revyos/thead-kernel/tree/lpi4a/arch/riscv/configs
-#   defconfig = "light_defconfig";
+#   defconfig = "revyos_defconfig";
 
 #   structuredExtraConfig = with lib.kernel; lib.mkForce {
 #     # MEDIA_DIGITAL_TV_SUPPORT = no;
@@ -40,14 +40,19 @@
   
   # path to the generated kernel config file
   # 
-  # you can generate the config file based on the light_defconfig 
-  # by running `make light_defconfig` in the kernel source tree.
-  # and then copy the generated file(`.config`) to ./light_config in the same directory of this file.
+  # you can generate the config file based on the revyos_defconfig 
+  # by running `make revyos_defconfig` in the kernel source tree.
+  # and then copy the generated file(`.config`) to ./revyos_config in the same directory of this file.
   # 
-  #   make light_defconfig   # generate the config file from light_defconfig (the default config file)
+  #   make revyos_defconfig   # generate the config file from revyos_defconfig (the default config file)
   #   make menuconfig        # view and modify the generated config file(.config) via Terminal UI
   #                          # input / to search, Ctrl+Backspace to delete.
-  configfile = ./light_config;
+  #
+  # and need to add these three lines to the end of the generated config file:
+  #   CONFIG_DMIID=y
+  #   CONFIG_VECTOR=n
+  #   CONFIG_THEAD_ISA=n
+  configfile = ./revyos_config;
 
   extraMakeFlags = [
     # set the CFLAGS and CPPFLAGS to enable the rv64gc and lp64d.
