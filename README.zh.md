@@ -280,6 +280,16 @@ rootfs 已经成功构建完成，内容如下：
 
 还有就是，NixOS 的 Image 跟 initrd 文件名称都非常长，可能要研究下怎么配置 uboot 使它能够识别到。
 
+看这里有说，好像可以通过在 boot 分区建一个 `config.txt` 解决问题：
+
+https://github.com/chainsx/armbian-riscv-build/blob/f66314b1eb02736fcb665fbd4047fc207a91fac5/doc/licheepi-4a-install-guide.md?plain=1#L38
+
+```shell
+fdt_file=light-lpi4a.dtb
+kernel_file=Image
+bootargs=console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd
+```
+
 ## See Also
 
 There are other efforts to bring NixOS to RISC-V:
