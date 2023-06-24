@@ -78,7 +78,7 @@ we can download the prebuilt u-boot-with-spl-lpi4a.bin and boot.ext4 from here:
 
 - https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
 
-## build rootfs
+## Build rootfs
 
 Before building, we need to enable riscv64-linux emulation on the host machine, for example, on NixOS, add the following line to system configuration:
 
@@ -105,7 +105,7 @@ sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
 sudo losetup -d /dev/loop0
 ```
 
-## flash images
+## Flash images
 
 > Official Docs: https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/4_burn_image.html
 
