@@ -3,11 +3,11 @@
     "kernel-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1687601926,
-        "narHash": "sha256-P9VZmAkLdNoeoXmWXdjWt+kBYsUQ++4Nt2Tl9FV1RVw=",
+        "lastModified": 1687607314,
+        "narHash": "sha256-9R+XY18uDuMWjVzLkg4lTmxDltsvyI51qvm34SNVI4I=",
         "owner": "revyos",
         "repo": "thead-kernel",
-        "rev": "ded657fd091ecc6a53d97982988880e1f0f4c0a6",
+        "rev": "9c58afc7addc5a4a5deef24dfe6a4a103549d3da",
         "type": "github"
       },
       "original": {

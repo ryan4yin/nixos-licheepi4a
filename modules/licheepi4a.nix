@@ -33,7 +33,11 @@
     ];
     
     initrd.includeDefaultModules = false;
-    # initrd.kernelModules = [ "nvme" "mmc_block" "mmc_spi" ];
+    initrd.availableKernelModules = lib.mkForce [
+      "ext4" "sd_mod" "mmc_block" "spi_nor"
+      "xhci_hcd"
+      "usbhid" "hid_generic"
+    ];
   };
 
   # https://github.com/revyos/thead-kernel/blob/lpi4a/arch/riscv/boot/dts/thead/light-lpi4a.dts
@@ -48,9 +52,8 @@
   # Some filesystems (e.g. zfs) have some trouble with cross (or with BSP kernels?) here.
   boot.supportedFilesystems = lib.mkForce [
     "vfat"
-    "fat32"
-    "exfat"
     "ext4"
+    "btrfs"
   ];
 
   fileSystems = {
