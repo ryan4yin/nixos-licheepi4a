@@ -6,14 +6,6 @@
 
 This repo contains the code to get NixOS running on LicheePi 4A.
 
-## TODO
-
-- [ ] fix `Error: unrecognized opcode 'csrr a5,0xc01', , it seems I need to enable the riscv64's zicsr extension`
-  - added `gcc.arch = "rv64gc";`, but still not working...
-  - some issues may related to this error
-    - https://github.com/NixOS/nixpkgs/issues/235179
-    - https://github.com/NixOS/nixpkgs/issues/101651
-
 ## Parameters
 
 <table>
