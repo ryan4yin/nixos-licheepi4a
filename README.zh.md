@@ -146,20 +146,20 @@ dd if=${IMG_FILE} of=rootfs.ext4 bs=512 skip=77824 count=3711720
 2. 接下来使用如下指令分别烧录镜像：
 3. fastboot 程序直接从 [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools) 下载，或者从包管理器安装都行。
 
+````shell
+
 ```shell
 # flash u-boot into spl partition
-sudo fastboot flash ram u-boot-with-spl-lpi4a-20230510.bin
+sudo fastboot flash ram u-boot-with-spl.bin
 sudo fastboot reboot
-
 # flash uboot partition
-sudo fastboot flash uboot u-boot-with-spl-lpi4a-20230510.bin
-# flash boot partition
-sudo fastboot flash boot  boot-20230510-230240.ext4
-# flash rootfs partition
-sudo fastboot flash root rootfs.ext4
-```
+sudo fastboot flash uboot u-boot-with-spl.bin
 
-系统启动后，第一件事应该是扩容 rootfs 分区，因为默认情况下系统没有任何空闲空间：
+# flash nixos's rootfs partition
+sudo fastboot flash root rootfs.ext4
+````
+
+系统启动后，第一件事应该是扩容 rootfs 分区，因为默认情况下系统没有任何空闲空间（这一步可以让 NixOS 在启动时自动做，改个参数即可）：
 
 ```shell
 sudo parted -s /dev/mmcblk0 "resizepart 3 -0"

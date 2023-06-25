@@ -123,17 +123,8 @@ sudo fastboot reboot
 # flash uboot partition
 sudo fastboot flash uboot u-boot-with-spl.bin
 
-# flash nixos's boot partition
-sudo fastboot flash boot  boot.ext4
 # flash nixos's rootfs partition
 sudo fastboot flash root rootfs.ext4
-```
-
-After boot the system, the first thing to do is to expand the rootfs partition, because by default the system has no free space:
-
-```shell
-sudo parted -s /dev/mmcblk0 "resizepart 3 -0"
-sudo resize2fs /dev/mmcblk0p3
 ```
 
 ## See Also
