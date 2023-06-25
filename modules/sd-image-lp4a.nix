@@ -38,7 +38,7 @@
 # }
 
 
-# method too, use "${modulesPath}/../lib/make-disk-image.nix"
+# method 2, use "${modulesPath}/../lib/make-disk-image.nix"
 # with this method, the generated image has a basic fhs layout.
 #
 { config, lib, nixpkgs, modulesPath, pkgs, ... }: {
