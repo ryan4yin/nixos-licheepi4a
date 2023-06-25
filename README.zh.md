@@ -300,6 +300,12 @@ LABEL nixos-default
 
 然后照着上面的信息，我做了尝试，刷完后系统完全无法启动，目前还没搞明白是哪里出了问题，也完全不知道该怎么 debug，感觉或许可以试试生成个镜像放 qemu 里跑跑看？
 
+如果是要生成 config.txt 的话，这个 arm64 的模版应该可以参考：
+
+https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix
+
+https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-aarch64.nix
+
 ## See Also
 
 There are other efforts to bring NixOS to RISC-V:
