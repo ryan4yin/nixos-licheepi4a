@@ -292,29 +292,13 @@ LABEL nixos-default
 
 其中几个固件名称很熟悉，看了下果然这里就有： https://github.com/chainsx/fedora-riscv-builder/tree/main/firmware
 
-现在要解决的就是，把 NixOS 的 `/boot` 单独拆分成一个分区，`/` 中只留一个空文件夹作为挂载点，然后参照 revyos 的 boot 分区，将相关的驱动文件复制到新的 boot 分区中。
+在跟 chainsx 以及 revy 两位沟通后，目前能确定的信息有：
 
-还有就是，NixOS 的 Image 跟 initrd 文件名称都非常长，可能要研究下怎么配置 uboot 使它能够识别到。
+1. /boot 不需要单独分区，直接放到 / 分区也是可以的——而这正是 NixOS sd-image 的默认做法，这就很方便了。
+2. chainsx 的 u-boot 分支，已经支持了 extlinux，可以直接使用 extlinux.conf 进行启动。也就是说我可以使用 chainsx 的 u-boot，加上我的 rootfs 来启动。
+3. chainsx 的项目中好像提到可以将镜像刷到 SD 卡上，但是记得之前 Sipeed 官方说过测试板不支持从 SD 卡启动，这一点还有待确认。
 
-看这里有说，好像可以通过在 boot 分区建一个 `config.txt` 解决问题：
-
-https://github.com/chainsx/armbian-riscv-build/blob/f66314b1eb02736fcb665fbd4047fc207a91fac5/doc/licheepi-4a-install-guide.md?plain=1#L38
-
-```shell
-fdt_file=light-lpi4a.dtb
-kernel_file=Image
-bootargs=console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd
-```
-
-https://github.com/revyos/revyos/wiki/%E6%89%8B%E5%8A%A8%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8---Maunally-Build-Kernel#%E4%B8%AD%E6%96%87
-
-看内容跟前面 NixOS 生成的 `extlinux.conf` 文件内容差不多，可以研究下。
-
-如果是要生成 config.txt 的话，这个 arm64 的模版应该可以参考：
-
-https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix
-
-https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-aarch64.nix
+然后照着上面的信息，我做了尝试，刷完后系统完全无法启动，目前还没搞明白是哪里出了问题，也完全不知道该怎么 debug，感觉或许可以试试生成个镜像放 qemu 里跑跑看？
 
 ## See Also
 

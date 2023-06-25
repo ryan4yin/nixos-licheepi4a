@@ -12,6 +12,7 @@
   lib,
   src,
   stdenv,
+  ubootTools,
   linuxManualConfig,
   ...
 }:
@@ -40,4 +41,7 @@
   extraMeta.branch = "lp4a";
 
   allowImportFromDerivation = true;
+}).overrideAttrs (old: {
+  name = "k"; # shorten the kernel name, dodge uboot length limits, otherwise it will make uboot fail to load kernel. 
+  nativeBuildInputs = old.nativeBuildInputs ++ [ubootTools];
 })
