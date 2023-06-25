@@ -127,6 +127,14 @@ sudo fastboot flash uboot u-boot-with-spl.bin
 sudo fastboot flash root rootfs.ext4
 ```
 
+## Debug with QEMU
+
+Generate the image for QEMU:
+
+```shell
+nix build .#nixosConfigurations.qemu.config.system.build.sdImage --keep-failed
+```
+
 ## See Also
 
 There are other efforts to bring NixOS to RISC-V:

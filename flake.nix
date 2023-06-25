@@ -104,6 +104,27 @@
         }
 
         ./modules/licheepi4a.nix
+        ./modules/sd-image-lp4a.nix
+      ];
+    };
+
+    # cross-build
+    nixosConfigurations.qemu = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+
+      specialArgs = {
+        inherit nixpkgs pkgsKernel;
+      };
+      modules = [
+        {
+          # cross-compilation this flake.
+          nixpkgs.crossSystem = {
+            system = "riscv64-linux";
+          };
+        }
+
+        ./modules/licheepi4a.nix
+        ./modules/sd-image-qemu.nix
       ];
     };
 

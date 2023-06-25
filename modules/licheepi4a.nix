@@ -9,7 +9,6 @@
   imports = [
     ./base.nix
     ./hardware.nix
-    ./rootfs.nix
   ];
 
   boot = {
