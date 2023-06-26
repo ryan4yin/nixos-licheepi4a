@@ -297,14 +297,9 @@ LABEL nixos-default
 1. /boot 不需要单独分区，直接放到 / 分区也是可以的——而这正是 NixOS sd-image 的默认做法，这就很方便了。
 2. chainsx 的 u-boot 分支，已经支持了 extlinux，可以直接使用 extlinux.conf 进行启动。也就是说我可以使用 chainsx 的 u-boot，加上我的 rootfs 来启动。
 3. chainsx 的项目中好像提到可以将镜像刷到 SD 卡上，但是记得之前 Sipeed 官方说过测试板不支持从 SD 卡启动，这一点还有待确认。
+   1. SD 卡后面再说，先把镜像刷到 eMMC 上启动起来...
 
 然后照着上面的信息，我做了尝试，刷完后系统完全无法启动，目前还没搞明白是哪里出了问题，也完全不知道该怎么 debug，感觉或许可以试试生成个镜像放 qemu 里跑跑看？
-
-如果是要生成 config.txt 的话，这个 arm64 的模版应该可以参考：
-
-https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix
-
-https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image-aarch64.nix
 
 ## See Also
 
