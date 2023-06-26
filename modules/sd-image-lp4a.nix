@@ -11,7 +11,6 @@ in {
     "${modulesPath}/installer/sd-card/sd-image.nix"
   ];
 
-
   # https://github.com/chainsx/fedora-riscv-builder/blob/f46ae18/build.sh#L179-L184
   boot.kernelParams = [
     "console=ttyS0,115200"
@@ -25,6 +24,11 @@ in {
     "rootrwoptions=rw,noatime"
     "rootrwreset=yes"
   ];
+
+  boot.loader = {
+    grub.enable = false;
+    generic-extlinux-compatible.enable = true;
+  };
 
   fileSystems = {
     "/" = {
@@ -40,15 +44,19 @@ in {
     compressImage = false;
     # install firmware into a separate partition: /boot/firmware
     populateFirmwareCommands = ''
-      cp ${pkgs.opensbi}/share/opensbi/lp64/generic/firmware/fw_dynamic.bin ./firmware/
-      cp ${light_aon_fpga}/lib/firmware/light_aon_fpga.bin ./firmware/
-      cp ${light_c906_audio}/lib/firmware/light_c906_audio.bin ./firmware/
+      cp ${pkgs.opensbi}/share/opensbi/lp64/generic/firmware/fw_dynamic.bin firmware/fw_dynamic.bin
+      cp ${light_aon_fpga}/lib/firmware/light_aon_fpga.bin firmware/light_aon_fpga.bin
+      cp ${light_c906_audio}/lib/firmware/light_c906_audio.bin firmware/light_c906_audio.bin
     '';
 
     # generate /boot
     populateRootCommands = ''
       mkdir -p ./files/boot
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
+
+      cp ${pkgs.opensbi}/share/opensbi/lp64/generic/firmware/fw_dynamic.bin ./files/boot/fw_dynamic.bin
+      cp ${light_aon_fpga}/lib/firmware/light_aon_fpga.bin ./files/boot/light_aon_fpga.bin
+      cp ${light_c906_audio}/lib/firmware/light_c906_audio.bin ./files/boot/light_c906_audio.bin
     '';
   };
 }

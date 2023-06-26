@@ -12,8 +12,6 @@
   ];
 
   boot = {
-    loader.grub.enable = false;
-    loader.generic-extlinux-compatible.enable = true;
     kernelPackages = pkgsKernel.linuxPackages_thead;
     
     initrd.includeDefaultModules = false;

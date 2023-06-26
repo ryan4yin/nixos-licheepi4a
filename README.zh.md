@@ -94,10 +94,7 @@ Extrace rootfs from sdImage:
 
 ```shell
 # mount the image
-sudo losetup -P --show -f result/sd-image/nixos-sd-image-23.05.20230624.3ef8b37-riscv64-linux.img
-
-# mount the image
-sudo losetup -P --show -f $(ls result/sd-image/nixos-*-riscv64-linux.img)
+sudo losetup -P --show -f $(ls nixos-*-riscv64-linux.img)
 
 # extract the rootfs partition
 sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
