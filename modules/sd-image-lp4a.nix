@@ -54,9 +54,10 @@
   # https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix
   system.build.sdImage = import "${modulesPath}/../lib/make-disk-image.nix" {
     inherit config lib;
-    # need to use the emulated system to build the image for riscv64
+    # need to use the unmodified corss build system to build the image for riscv64
     pkgs = import nixpkgs {
-      system = "riscv64-linux";
+      localSystem = "x86_64-linux";
+      corssSystem = "riscv64-linux";
     };
     name = "licheepi4a-sd-image";
     copyChannel = false;
