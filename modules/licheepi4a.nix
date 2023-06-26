@@ -19,7 +19,7 @@
     # https://github.com/chainsx/fedora-riscv-builder/blob/51841d872b/config/config-emmc.txt
     kernelParams = [
       "console=ttyS0,115200"
-      "root=/dev/mmcblk0p3"  # use the third partition of the eMMC as rootfs
+      "root=/dev/mmcblk0p2"  # use the second partition of the eMMC as rootfs
       "rootfstype=ext4"
       "rootwait"
       "rw"
@@ -29,7 +29,6 @@
       "eth=$ethaddr"
       "rootrwoptions=rw,noatime"
       "rootrwreset=yes"
-      "init=/lib/systemd/systemd"
     ];
     
     initrd.includeDefaultModules = false;
