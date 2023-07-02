@@ -269,6 +269,580 @@ LABEL nixos-default
   INITRD ../nixos/vh8624bjxdpxh7ds3nqvqbx992yx63hp-initrd-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-initrd
   APPEND init=/nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37/init console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd loglevel=4
   FDT ../nixos/rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-dtbs/thead/light-lpi4a.dtb
+
+
+# 看下 init 脚本到底干了些啥，明面上它貌似创建了 /etc /etc/nixos /tmp /run /proc /dev /sys 等文件夹
+› cat /nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37/init
+#! /nix/store/ny69lqq5dgw5xz6h5ply8cwzifcvplxx-bash-5.2-p15-riscv64-unknown-linux-gnu/bin/bash
+
+systemConfig=/nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37
+
+export HOME=/root PATH="/nix/store/4l7v9y3r2mp2sdhjxjl35yvjsxmrdl4h-coreutils-riscv64-unknown-linux-gnu-9.1/bin:/nix/store/c1xb4z38bvl29vbvc2la2957gv9sdy61-util-linux-riscv64-unknown-linux-gnu-2.38.1-bin/bin"
+
+
+if [ "${IN_NIXOS_SYSTEMD_STAGE1:-}" != true ]; then
+    # Process the kernel command line.
+    for o in $(</proc/cmdline); do
+        case $o in
+            boot.debugtrace)
+                # Show each command.
+                set -x
+                ;;
+        esac
+    done
+
+
+    # Print a greeting.
+    echo
+    echo -e "\e[1;32m<<< NixOS Stage 2 >>>\e[0m"
+    echo
+
+
+    # Normally, stage 1 mounts the root filesystem read/writable.
+    # However, in some environments, stage 2 is executed directly, and the
+    # root is read-only.  So make it writable here.
+    if [ -z "$container" ]; then
+        mount -n -o remount,rw none /
+    fi
+fi
+
+
+# Likewise, stage 1 mounts /proc, /dev and /sys, so if we don't have a
+# stage 1, we need to do that here.
+if [ ! -e /proc/1 ]; then
+    specialMount() {
+        local device="$1"
+        local mountPoint="$2"
+        local options="$3"
+        local fsType="$4"
+
+        # We must not overwrite this mount because it's bind-mounted
+        # from stage 1's /run
+        if [ "${IN_NIXOS_SYSTEMD_STAGE1:-}" = true ] && [ "${mountPoint}" = /run ]; then
+            return
+        fi
+
+        install -m 0755 -d "$mountPoint"
+        mount -n -t "$fsType" -o "$options" "$device" "$mountPoint"
+    }
+    source /nix/store/z1b5brgask2dvsq2gjkk8vc9rv5r2c0y-mounts.sh
+fi
+
+
+if [ "${IN_NIXOS_SYSTEMD_STAGE1:-}" = true ]; then
+    echo "booting system configuration ${systemConfig}"
+else
+    echo "booting system configuration $systemConfig" > /dev/kmsg
+fi
+
+
+# Make /nix/store a read-only bind mount to enforce immutability of
+# the Nix store.  Note that we can't use "chown root:nixbld" here
+# because users/groups might not exist yet.
+# Silence chown/chmod to fail gracefully on a readonly filesystem
+# like squashfs.
+chown -f 0:30000 /nix/store
+chmod -f 1775 /nix/store
+if [ -n "1" ]; then
+    if ! [[ "$(findmnt --noheadings --output OPTIONS /nix/store)" =~ ro(,|$) ]]; then
+        if [ -z "$container" ]; then
+            mount --bind /nix/store /nix/store
+        else
+            mount --rbind /nix/store /nix/store
+        fi
+        mount -o remount,ro,bind /nix/store
+    fi
+fi
+
+
+if [ "${IN_NIXOS_SYSTEMD_STAGE1:-}" != true ]; then
+    # Use /etc/resolv.conf supplied by systemd-nspawn, if applicable.
+    if [ -n "" ] && [ -e /etc/resolv.conf ]; then
+        resolvconf -m 1000 -a host </etc/resolv.conf
+    fi
+
+
+    # Log the script output to /dev/kmsg or /run/log/stage-2-init.log.
+    # Only at this point are all the necessary prerequisites ready for these commands.
+    exec {logOutFd}>&1 {logErrFd}>&2
+    if test -w /dev/kmsg; then
+        exec > >(tee -i /proc/self/fd/"$logOutFd" | while read -r line; do
+            if test -n "$line"; then
+                echo "<7>stage-2-init: $line" > /dev/kmsg
+            fi
+        done) 2>&1
+        exec > >(tee -i /run/log/stage-2-init.log) 2>&1
+    fi
+fi
+
+
+# Required by the activation script
+install -m 0755 -d /etc /etc/nixos
+install -m 01777 -d /tmp
+
+
+# Run the script that performs all configuration activation that does
+# not have to be done at boot time.
+echo "running activation script..."
+$systemConfig/activate
+
+
+# Record the boot configuration.
+ln -sfn "$systemConfig" /run/booted-system
+
+
+# Run any user-specified commands.
+/nix/store/ny69lqq5dgw5xz6h5ply8cwzifcvplxx-bash-5.2-p15-riscv64-unknown-linux-gnu/bin/bash /nix/store/b63lb8ssxjzdwdvrn39k73vavlk8kinj-local-cmds
+
+
+# Ensure systemd doesn't try to populate /etc, by forcing its first-boot
+# heuristic off. It doesn't matter what's in /etc/machine-id for this purpose,
+# and systemd will immediately fill in the file when it starts, so just
+# creating it is enough. This `: >>` pattern avoids forking and avoids changing
+# the mtime if the file already exists.
+: >> /etc/machine-id
+
+
+# No need to restore the stdout/stderr streams we never redirected and
+# especially no need to start systemd
+if [ "${IN_NIXOS_SYSTEMD_STAGE1:-}" != true ]; then
+    # Reset the logging file descriptors.
+    exec 1>&$logOutFd 2>&$logErrFd
+    exec {logOutFd}>&- {logErrFd}>&-
+
+
+    # Start systemd in a clean environment.
+    echo "starting systemd..."
+    exec /run/current-system/systemd/lib/systemd/systemd "$@"
+fi
+
+
+
+# 再看看其中的 $systemConfig/activate 都干了些啥
+# 能看到它就是继续生成与链接各种 Linux 运行必备的 FHS 文件树，以及各种必备的文件
+# 比如 /bin/sh /home /root /etc /var 等等
+› cat /nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37/activate
+#!/nix/store/ny69lqq5dgw5xz6h5ply8cwzifcvplxx-bash-5.2-p15-riscv64-unknown-linux-gnu/bin/bash
+
+systemConfig='/nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37'
+
+export PATH=/empty
+for i in /nix/store/4l7v9y3r2mp2sdhjxjl35yvjsxmrdl4h-coreutils-riscv64-unknown-linux-gnu-9.1 /nix/store/00k2kgxrxx8nrs9sqrajl43aabg58655-gnugrep-riscv64-unknown-linux-gnu-3.7 /nix/store/pjsjh36lkn6jqina5l30609d8ldyqw7g-findutils-riscv64-unknown-linux-gnu-4.9.0 /nix/store/n0wk98079d81zaa37ll4nnkh0gnnjp45-getent-glibc-riscv64-unknown-linux-gnu-2.37-8 /nix/store/j3vh88d4kkpgnjdpxhqibpjqa4x59pzy-glibc-riscv64-unknown-linux-gnu-2.37-8-bin /nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13 /nix/store/csi20f6aksz8fdcjb7sz9a860vjd4v9g-net-tools-riscv64-unknown-linux-gnu-2.10 /nix/store/c1xb4z38bvl29vbvc2la2957gv9sdy61-util-linux-riscv64-unknown-linux-gnu-2.38.1-bin; do
+    PATH=$PATH:$i/bin:$i/sbin
+done
+
+_status=0
+trap "_status=1 _localstatus=\$?" ERR
+
+# Ensure a consistent umask.
+umask 0022
+
+#### Activation script snippet specialfs:
+_localstatus=0
+specialMount() {
+  local device="$1"
+  local mountPoint="$2"
+  local options="$3"
+  local fsType="$4"
+
+  if mountpoint -q "$mountPoint"; then
+    local options="remount,$options"
+  else
+    mkdir -m 0755 -p "$mountPoint"
+  fi
+  mount -t "$fsType" -o "$options" "$device" "$mountPoint"
+}
+source /nix/store/z1b5brgask2dvsq2gjkk8vc9rv5r2c0y-mounts.sh
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "specialfs" "$_localstatus"
+fi
+
+#### Activation script snippet binfmt:
+_localstatus=0
+mkdir -p -m 0755 /run/binfmt
+
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "binfmt" "$_localstatus"
+fi
+
+#### Activation script snippet stdio:
+_localstatus=0
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "stdio" "$_localstatus"
+fi
+
+#### Activation script snippet binsh:
+_localstatus=0
+# Create the required /bin/sh symlink; otherwise lots of things
+# (notably the system() function) won't work.
+mkdir -m 0755 -p /bin
+ln -sfn "/nix/store/qs8dvkg2719slcc6rvv89whphg697cwm-bash-interactive-5.2-p15-riscv64-unknown-linux-gnu/bin/sh" /bin/.sh.tmp
+mv /bin/.sh.tmp /bin/sh # atomically replace /bin/sh
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "binsh" "$_localstatus"
+fi
+
+#### Activation script snippet check-manual-docbook:
+_localstatus=0
+if [[ $(cat /nix/store/v3hlwi9fqqhgwsggd5p478rgmsqxfph5-options-used-docbook) = 1 ]]; then
+  echo -e "\e[31;1mwarning\e[0m: This configuration contains option documentation in docbook." \
+          "Support for docbook is deprecated and will be removed after NixOS 23.05." \
+          "See nix-store --read-log /nix/store/0z3bpdvagjpmpl7m2i4ajzjyg6cipc8a-options.json.drv"
+fi
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "check-manual-docbook" "$_localstatus"
+fi
+
+#### Activation script snippet domain:
+_localstatus=0
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "domain" "$_localstatus"
+fi
+
+#### Activation script snippet users:
+_localstatus=0
+install -m 0700 -d /root
+install -m 0755 -d /home
+
+/nix/store/r5wdgk9pwj7bvff208vsd9a821b9dw0c-perl-riscv64-unknown-linux-gnu-5.36.0-env/bin/perl \
+-w /nix/store/jb6kmxd6ixbcb8s338ah2pdz26n0bbz4-update-users-groups.pl /nix/store/yjjxriwk6s7k14hrkd4mkmixmj1vskv5-users-groups.json
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "users" "$_localstatus"
+fi
+
+#### Activation script snippet groups:
+_localstatus=0
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "groups" "$_localstatus"
+fi
+
+#### Activation script snippet etc:
+_localstatus=0
+# Set up the statically computed bits of /etc.
+echo "setting up /etc..."
+/nix/store/h1hh2x1zj7h7ih36jy6482x01976cyhd-perl-riscv64-unknown-linux-gnu-5.36.0-env/bin/perl /nix/store/rg5rf512szdxmnj9qal3wfdnpfsx38qi-setup-etc.pl /nix/store/b154qqwp6pybryjrdn9yfcvckipn5ybj-etc/etc
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "etc" "$_localstatus"
+fi
+
+#### Activation script snippet hashes:
+_localstatus=0
+users=()
+while IFS=: read -r user hash tail; do
+  if [[ "$hash" = "$"* && ! "$hash" =~ ^\$(y|gy|7|2b|2y|2a|6)\$ ]]; then
+    users+=("$user")
+  fi
+done </etc/shadow
+
+if (( "${#users[@]}" )); then
+  echo "
+WARNING: The following user accounts rely on password hashing algorithms
+that have been removed. They need to be renewed as soon as possible, as
+they do prevent their users from logging in."
+  printf ' - %s\n' "${users[@]}"
+fi
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "hashes" "$_localstatus"
+fi
+
+#### Activation script snippet hostname:
+_localstatus=0
+hostname "nixos"
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "hostname" "$_localstatus"
+fi
+
+#### Activation script snippet modprobe:
+_localstatus=0
+# Allow the kernel to find our wrapped modprobe (which searches
+# in the right location in the Nix store for kernel modules).
+# We need this when the kernel (or some module) auto-loads a
+# module.
+echo /nix/store/zafa80062xl2sybshivrz81qa38nas5y-kmod-riscv64-unknown-linux-gnu-30/bin/modprobe > /proc/sys/kernel/modprobe
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "modprobe" "$_localstatus"
+fi
+
+#### Activation script snippet nix:
+_localstatus=0
+install -m 0755 -d /nix/var/nix/{gcroots,profiles}/per-user
+
+# Subscribe the root user to the NixOS channel by default.
+if [ ! -e "/root/.nix-channels" ]; then
+    echo "https://nixos.org/channels/nixos-23.05 nixos" > "/root/.nix-channels"
+fi
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "nix" "$_localstatus"
+fi
+
+#### Activation script snippet systemd-timesyncd-init-clock:
+_localstatus=0
+if ! [ -f /var/lib/systemd/timesync/clock ]; then
+  test -d /var/lib/systemd/timesync || mkdir -p /var/lib/systemd/timesync
+  touch /var/lib/systemd/timesync/clock
+fi
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "systemd-timesyncd-init-clock" "$_localstatus"
+fi
+
+#### Activation script snippet udevd:
+_localstatus=0
+# The deprecated hotplug uevent helper is not used anymore
+if [ -e /proc/sys/kernel/hotplug ]; then
+  echo "" > /proc/sys/kernel/hotplug
+fi
+
+# Allow the kernel to find our firmware.
+if [ -e /sys/module/firmware_class/parameters/path ]; then
+  echo -n "/nix/store/h4hgs3gig9l1x1d15v3cnlq11hg4p1r0-firmware/lib/firmware" > /sys/module/firmware_class/parameters/path
+fi
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "udevd" "$_localstatus"
+fi
+
+#### Activation script snippet usrbinenv:
+_localstatus=0
+mkdir -m 0755 -p /usr/bin
+ln -sfn /nix/store/4l7v9y3r2mp2sdhjxjl35yvjsxmrdl4h-coreutils-riscv64-unknown-linux-gnu-9.1/bin/env /usr/bin/.env.tmp
+mv /usr/bin/.env.tmp /usr/bin/env # atomically replace /usr/bin/env
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "usrbinenv" "$_localstatus"
+fi
+
+#### Activation script snippet var:
+_localstatus=0
+# Various log/runtime directories.
+
+mkdir -m 1777 -p /var/tmp
+
+# Empty, immutable home directory of many system accounts.
+mkdir -p /var/empty
+# Make sure it's really empty
+/nix/store/2fw7rr6yaaspkwwix771lcdwj02a3qxx-e2fsprogs-riscv64-unknown-linux-gnu-1.46.6-bin/bin/chattr -f -i /var/empty || true
+find /var/empty -mindepth 1 -delete
+chmod 0555 /var/empty
+chown root:root /var/empty
+/nix/store/2fw7rr6yaaspkwwix771lcdwj02a3qxx-e2fsprogs-riscv64-unknown-linux-gnu-1.46.6-bin/bin/chattr -f +i /var/empty || true
+
+
+if (( _localstatus > 0 )); then
+  printf "Activation script snippet '%s' failed (%s)\n" "var" "$_localstatus"
+fi
+
+#### Activation script snippet wrappers:
+_localstatus=0
+chmod 755 "/run/wrappers"
+
+# We want to place the tmpdirs for the wrappers to the parent dir.
+wrapperDir=$(mktemp --directory --tmpdir="/run/wrappers" wrappers.XXXXXXXXXX)
+chmod a+rx "$wrapperDir"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/chsh"
+echo -n "/nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13/bin/chsh" > "$wrapperDir/chsh.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/chsh"
+chown root:root "$wrapperDir/chsh"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/chsh"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/dbus-daemon-launch-helper"
+echo -n "/nix/store/3x1cpq5axfwygjssjg42clfvi085xjgp-dbus-riscv64-unknown-linux-gnu-1.14.6/libexec/dbus-daemon-launch-helper" > "$wrapperDir/dbus-daemon-launch-helper.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/dbus-daemon-launch-helper"
+chown root:messagebus "$wrapperDir/dbus-daemon-launch-helper"
+
+chmod "u+s,g-s,u+rx,g+rx,o-rx" "$wrapperDir/dbus-daemon-launch-helper"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/fusermount"
+echo -n "/nix/store/770sky5x7dbcmzc2xahvws7pw250bj2s-fuse-riscv64-unknown-linux-gnu-2.9.9/bin/fusermount" > "$wrapperDir/fusermount.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/fusermount"
+chown root:root "$wrapperDir/fusermount"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/fusermount"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/fusermount3"
+echo -n "/nix/store/gkxzqirzcf548w4421jlwhn1imp4979d-fuse-riscv64-unknown-linux-gnu-3.11.0/bin/fusermount3" > "$wrapperDir/fusermount3.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/fusermount3"
+chown root:root "$wrapperDir/fusermount3"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/fusermount3"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/mount"
+echo -n "/nix/store/c1xb4z38bvl29vbvc2la2957gv9sdy61-util-linux-riscv64-unknown-linux-gnu-2.38.1-bin/bin/mount" > "$wrapperDir/mount.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/mount"
+chown root:root "$wrapperDir/mount"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/mount"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/newgidmap"
+echo -n "/nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13/bin/newgidmap" > "$wrapperDir/newgidmap.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/newgidmap"
+chown root:root "$wrapperDir/newgidmap"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/newgidmap"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/newgrp"
+echo -n "/nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13/bin/newgrp" > "$wrapperDir/newgrp.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/newgrp"
+chown root:root "$wrapperDir/newgrp"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/newgrp"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/newuidmap"
+echo -n "/nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13/bin/newuidmap" > "$wrapperDir/newuidmap.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/newuidmap"
+chown root:root "$wrapperDir/newuidmap"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/newuidmap"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/passwd"
+echo -n "/nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13/bin/passwd" > "$wrapperDir/passwd.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/passwd"
+chown root:root "$wrapperDir/passwd"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/passwd"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/ping"
+echo -n "/nix/store/vwzakxlkma6lg0yd5ilx0cbj69whpm38-iputils-riscv64-unknown-linux-gnu-20221126/bin/ping" > "$wrapperDir/ping.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/ping"
+chown root:root "$wrapperDir/ping"
+
+# Set desired capabilities on the file plus cap_setpcap so
+# the wrapper program can elevate the capabilities set on
+# its file into the Ambient set.
+/nix/store/cpnqm7m872fsqky7bjbqwy8llbbf33l9-libcap-riscv64-unknown-linux-gnu-2.68/bin/setcap "cap_setpcap,cap_net_raw+p" "$wrapperDir/ping"
+
+# Set the executable bit
+chmod u+rx,g+x,o+x "$wrapperDir/ping"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/sg"
+echo -n "/nix/store/wj90d7n8xfk163vwyg74fvnxh88fsp6h-shadow-riscv64-unknown-linux-gnu-4.13/bin/sg" > "$wrapperDir/sg.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/sg"
+chown root:root "$wrapperDir/sg"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/sg"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/su"
+echo -n "/nix/store/jy1c86m85801g025pd6gs9ljhj301bsi-shadow-riscv64-unknown-linux-gnu-4.13-su/bin/su" > "$wrapperDir/su.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/su"
+chown root:root "$wrapperDir/su"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/su"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/sudo"
+echo -n "/nix/store/54s80ssm7q2y1aqaavnrkvw7b4hkdm1g-sudo-riscv64-unknown-linux-gnu-1.9.13p3/bin/sudo" > "$wrapperDir/sudo.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/sudo"
+chown root:root "$wrapperDir/sudo"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/sudo"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/sudoedit"
+echo -n "/nix/store/54s80ssm7q2y1aqaavnrkvw7b4hkdm1g-sudo-riscv64-unknown-linux-gnu-1.9.13p3/bin/sudoedit" > "$wrapperDir/sudoedit.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/sudoedit"
+chown root:root "$wrapperDir/sudoedit"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/sudoedit"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/umount"
+echo -n "/nix/store/c1xb4z38bvl29vbvc2la2957gv9sdy61-util-linux-riscv64-unknown-linux-gnu-2.38.1-bin/bin/umount" > "$wrapperDir/umount.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/umount"
+chown root:root "$wrapperDir/umount"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/umount"
+
+cp /nix/store/ms8338dmzf45grswqknyghvzfszv6cby-security-wrapper-riscv64-unknown-linux-gnu/bin/security-wrapper "$wrapperDir/unix_chkpwd"
+echo -n "/nix/store/cffy2kkpwgams7b94ixrslvf9nny88pv-linux-pam-riscv64-unknown-linux-gnu-1.5.2/bin/unix_chkpwd" > "$wrapperDir/unix_chkpwd.real"
+
+# Prevent races
+chmod 0000 "$wrapperDir/unix_chkpwd"
+chown root:root "$wrapperDir/unix_chkpwd"
+
+chmod "u+s,g-s,u+rx,g+x,o+x" "$wrapperDir/unix_chkpwd"
+
+
+if [ -L /run/wrappers/bin ]; then
+  # Atomically replace the symlink
+  # See https://axialcorps.com/2013/07/03/atomically-replacing-files-and-directories/
+  old=$(readlink -f /run/wrappers/bin)
+  if [ -e "/run/wrappers/bin-tmp" ]; then
+    rm --force --recursive "/run/wrappers/bin-tmp"
+  fi
+  ln --symbolic --force --no-dereference "$wrapperDir" "/run/wrappers/bin-tmp"
+  mv --no-target-directory "/run/wrappers/bin-tmp" "/run/wrappers/bin"
+  rm --force --recursive "$old"
+
+
+# Make this configuration the current configuration.
+# The readlink is there to ensure that when $systemConfig = /system
+# (which is a symlink to the store), /run/current-system is still
+# used as a garbage collection root.
+ln -sfn "$(readlink -f "$systemConfig")" /run/current-system
+
+# Prevent the current configuration from being garbage-collected.
+mkdir -p /nix/var/nix/gcroots
+ln -sfn /run/current-system /nix/var/nix/gcroots/current-system
+
+exit $_status
 ```
 
 对照一下 revyos 官方的 boot 分区内容，应该就比较能理解，需要添加些啥了：
