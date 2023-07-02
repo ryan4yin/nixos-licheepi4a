@@ -267,7 +267,7 @@ LABEL nixos-default
   MENU LABEL NixOS - Default
   LINUX ../nixos/rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-Image
   INITRD ../nixos/vh8624bjxdpxh7ds3nqvqbx992yx63hp-initrd-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-initrd
-  APPEND init=/nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37/init console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes init=/lib/systemd/systemd loglevel=4
+  APPEND init=/nix/store/a5gnycsy3cq4ix2k8624649zj8xqzkxc-nixos-system-nixos-23.05.20230624.3ef8b37/init console=ttyS0,115200 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait rw earlycon clk_ignore_unused eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=yes loglevel=4
   FDT ../nixos/rzc42b6qjxy10wb1wkfmrxjcxsw52015-linux-riscv64-unknown-linux-gnu-5.10.113-thead-1520-dtbs/thead/light-lpi4a.dtb
 
 
