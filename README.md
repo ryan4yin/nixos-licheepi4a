@@ -6,6 +6,8 @@ This repo contains the code to get NixOS running on LicheePi 4A.
 
 ![](./_img/nixos-licheepi-neofetch.webp)
 
+Default user: `lp4a`, default password: `lp4a`.
+
 ## TODO
 
 - [x] release an image
@@ -13,7 +15,9 @@ This repo contains the code to get NixOS running on LicheePi 4A.
 - [ ] build u-boot with nix
 - [ ] debug with qemu
 
-## Build boot & rootfs
+## Build boot & rootfs image
+
+> You can skip this step if you just want to flash the prebuilt image.
 
 Build sdImage(which may take a long time, about 2 hours on my machine):
 
