@@ -19,8 +19,7 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
-        "thead-kernel": "thead-kernel",
-        "thead-opensbi": "thead-opensbi"
+        "thead-kernel": "thead-kernel"
       }
     },
     "thead-kernel": {
@@ -37,23 +36,6 @@
         "owner": "revyos",
         "ref": "lpi4a",
         "repo": "thead-kernel",
-        "type": "github"
-      }
-    },
-    "thead-opensbi": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1681291286,
-        "narHash": "sha256-VH3F7ZFH4FHLlKG19sA0F3tWC8BliYTkpK0Fd+bZwGk=",
-        "owner": "revyos",
-        "repo": "thead-opensbi",
-        "rev": "d98da90a19b5c71a5865ae17c8b2d8d210e78f19",
-        "type": "github"
-      },
-      "original": {
-        "owner": "revyos",
-        "ref": "lpi4a",
-        "repo": "thead-opensbi",
         "type": "github"
       }
     }

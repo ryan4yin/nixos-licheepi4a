@@ -12,20 +12,12 @@
       url = "github:revyos/thead-kernel/lpi4a";
       flake = false;
     };
-    thead-opensbi = {
-      url = "github:revyos/thead-opensbi/lpi4a";
-      flake = false;
-    };
-
-    # https://github.com/chainsx/fedora-riscv-builder
-
   };
 
   outputs = inputs@{ 
     self
     ,nixpkgs
     ,thead-kernel
-    ,thead-opensbi
     ,... }: 
   let
     pkgsKernel = import nixpkgs {
@@ -76,12 +68,9 @@
             ];
           });
 
-          # https://github.com/NixOS/nixpkgs/blob/32deda9ec08f550e4e0ece7708c4b674b2ca0dda/pkgs/misc/opensbi/default.nix#L11
-          # https://github.com/chainsx/fedora-riscv-builder/blob/20230623-0255/build.sh
-          opensbi = super.opensbi.overrideAttrs (old: {
-            src = thead-opensbi;
-            makeFlags = super.makeFlags ++ ["FW_PIC=y"];
-          });
+          light_aon_fpga = (super.callPackage ./pkgs/firmware/light_aon_fpga.nix {});
+          light_c906_audio = (super.callPackage ./pkgs/firmware/light_c906_audio.nix {});
+          thead-opensbi = super.callPackage ./pkgs/opensbi {};
         })
       ];
     };

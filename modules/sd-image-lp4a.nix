@@ -1,15 +1,10 @@
-# method 1, use "${modulesPath}/installer/sd-card/sd-image.nix"
-#  with this method, the generated image has only /boot and /nix/store... I don't know if it works.
 #
-{ config, modulesPath, pkgs, ... }: 
+{ config, lib, modulesPath, pkgs, pkgsKernel, ... }: 
 let
-  light_aon_fpga = (pkgs.callPackage ../pkgs/firmware/light_aon_fpga.nix {});
-  light_c906_audio = (pkgs.callPackage ../pkgs/firmware/light_c906_audio.nix {});
   rootPartitionUUID = "14e19a7b-0ae0-484d-9d54-43bd6fdc20c7";
 in {
-  # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image.nix
   imports = [
-    "${modulesPath}/installer/sd-card/sd-image.nix"
+    ./sd-image.nix
   ];
 
   # https://github.com/chainsx/fedora-riscv-builder/blob/f46ae18/build.sh#L179-L184
@@ -31,11 +26,18 @@ in {
     generic-extlinux-compatible.enable = true;
   };
 
-  fileSystems = {
+  fileSystems = lib.mkForce {
+    "/boot" = {
+      device = "/dev/disk/by-label/${config.sdImage.firmwarePartitionName}";
+      fsType = "vfat";
+      # Alternatively, this could be removed from the configuration.
+      # The filesystem is not needed at runtime, it could be treated
+      # as an opaque blob instead of a discrete FAT32 filesystem.
+      options = [ "nofail" "noauto" ];
+    };
     "/" = {
       device = "/dev/disk/by-label/NIXOS_SD";
       fsType = "ext4";
-      options = ["noatime"];
     };
   };
 
@@ -47,49 +49,17 @@ in {
     compressImage = false;
     # install firmware into a separate partition: /boot/firmware
     populateFirmwareCommands = ''
-      cp ${pkgs.opensbi}/share/opensbi/lp64/generic/firmware/fw_dynamic.bin firmware/fw_dynamic.bin
-      cp ${light_aon_fpga}/lib/firmware/light_aon_fpga.bin firmware/light_aon_fpga.bin
-      cp ${light_c906_audio}/lib/firmware/light_c906_audio.bin firmware/light_c906_audio.bin
-    '';
+      cp ${pkgsKernel.thead-opensbi}/share/opensbi/lp64/generic/firmware/fw_dynamic.bin firmware/fw_dynamic.bin
+      cp ${pkgsKernel.light_aon_fpga}/lib/firmware/light_aon_fpga.bin firmware/light_aon_fpga.bin
+      cp ${pkgsKernel.light_c906_audio}/lib/firmware/light_c906_audio.bin firmware/light_c906_audio.bin
 
-    # generate /boot
+      ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./firmware
+    '';
+    firmwarePartitionName = "BOOT";
+    firmwareSize = 200; # MiB
+
     populateRootCommands = ''
       mkdir -p ./files/boot
-      ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot
-
-      cp ${pkgs.opensbi}/share/opensbi/lp64/generic/firmware/fw_dynamic.bin ./files/boot/fw_dynamic.bin
-      cp ${light_aon_fpga}/lib/firmware/light_aon_fpga.bin ./files/boot/light_aon_fpga.bin
-      cp ${light_c906_audio}/lib/firmware/light_c906_audio.bin ./files/boot/light_c906_audio.bin
     '';
   };
 }
-
-
-# method 2, use "${modulesPath}/../lib/make-disk-image.nix"
-# with this method, the generated image has a basic fhs layout.
-# BUT THIS METHOD DOES NOT WORK, some seabios releated error(it seems do not support riscv64)
-#
-# { config, lib, nixpkgs, modulesPath, pkgs, ... }: {
-
-#   fileSystems = {
-#     "/" = {
-#       device = "/dev/disk/by-label/nixos";
-#       fsType = "ext4";
-#       options = ["noatime"];
-#     };
-#   };
-
-#   # https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix
-#   system.build.sdImage = import "${modulesPath}/../lib/make-disk-image.nix" {
-#     inherit config lib;
-#     # need to use the unmodified corss build system to build the image for riscv64
-#     pkgs = import nixpkgs {
-#       localSystem = "x86_64-linux";
-#       corssSystem = "riscv64-linux";
-#     };
-#     name = "licheepi4a-sd-image";
-#     copyChannel = false;
-#     format = "raw";
-#   };
-
-# }

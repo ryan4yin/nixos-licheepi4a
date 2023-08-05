@@ -2,63 +2,195 @@
 
 > work in progress.
 
-[[中文]](./README.zh.md)
-
 This repo contains the code to get NixOS running on LicheePi 4A.
 
 ![](./_img/nixos-licheepi-neofetch.webp)
 
 ## TODO
 
-- [ ] release an image
+- [x] release an image
+- [ ] build opensbi with nix
+- [ ] build u-boot with nix
+- [ ] debug with qemu
 
-## Parameters
+## Build boot & rootfs
 
-<table>
-<thead>
-<tr>
-  <th colspan=2>Main Chip</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Name</td>
-  <td>TH1520</td>
-</tr>
-<tr>
-  <td>CPU</td>
-  <td>
-    RISC-V 64GCV C910*4@2GHz <br>
-    · Each core contains 64KB I cache amd 64KB D Cache <br>
-    · Shared 1MB L2 Cache <br>
-    · Support TEE and REE, configered at core booting<br>
-    · Support multi-core debugging framework of custom and RISC-V compatible interface<br>
-    · Independent power domain, supports DVFS
-  </td>
-</tr>
-<tr>
-  <td>GPU</td>
-  <td>
-    · OpenCL 1.1/1.2/2.0<br>
-    · OpenGL ES 3.0/3.1/3.2<br>
-    · Vulkan 1.1/1.2<br>
-    · Android NN HAL
-  </td>
-</tr>
-<tr>
-  <td>NPU</td>
-  <td>
-    Support 4TOPS@INT8, up to 1GHz <br>
-    · Support TensorFlow、ONNX、Caffe <br>
-    · Support CNN、RNN、DNN
-  </td>
-</tr>
-</tbody>
-</table>
+Build sdImage(which may take a long time, about 2 hours on my machine):
 
-## References
+```shell
+nix build .#nixosConfigurations.lp4a.config.system.build.sdImage -L --show-trace
+```
+
+It take about 2 hours on my machine to build the image.
+After the build is complete, the image will be in `result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img`.
+
+The image has some problem currently, we need to fix the partition sized by the following commands:
+
+```bash
+cp result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img nixos-lp4a.img
+
+# increase img's file size
+dd if=/dev/zero bs=1M count=16 >> nixos-lp4a.img
+sudo losetup --find --partscan nixos-lp4a.img
+
+# check rootfs's status, it's broken.
+sudo fsck /dev/loop0p2
+
+# increase the rootfs's partition size & file system size
+nix shell nixpkgs#cloud-utils
+echo w | sudo fdisk /dev/loop0
+sudo growpart /dev/loop0 2
+
+# check rootfs's status again, it should be normal now.
+sudo fsck /dev/loop0p2
+
+# umount the image file
+sudo losetup -d /dev/loop0
+```
+
+## Flash into SD card
+
+> Official Docs: https://wiki.sipeed.com/hardware/en/lichee/th1520/lpi4a/4_burn_image.html
+
+According to the official docs, the flash process of the internal test version LP4A hardware is as follows:
+
+1. Press and hold the BOOT button on the board, then plug in the USB-C cable to power on (the other end of the cable is connected to the PC), and you can enter the USB burning mode (fastboot).
+   1. the command `lsusb | grep T-HEAD` should print `ID 2345:7654 T-HEAD USB download gadget`
+2. Then use the following command to flash the image into the board's eMMC.
+   1. The fastboot program can be downloaded directly from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or installed from the package manager.
+
+So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst` from [releases](https://github.com/ryan4yin/nixos-licheepi4a/releases).
+
+> The `u-boot-with-spl.bin` are built from [chainsx/fedora-riscv-builder](https://github.com/chainsx/fedora-riscv-builder/releases) currently.
+
+Then, flash into the board's spl partition and uboot partition:
+
+```bash
+# flash u-boot into spl partition
+sudo fastboot flash ram u-boot-with-spl.bin
+sudo fastboot reboot
+# flash uboot partition
+sudo fastboot flash uboot u-boot-with-spl.bin
+```
+
+Finally, flash boot & rootfs into SD card:
+
+```bash
+zstd -d nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst
+sudo dd if=nixos-licheepi4a-sd-image-xxx-riscv64-linux.img of=/dev/sdX bs=4M status=progress
+```
+
+Now insert the SD card into the board, and power on, you should see NixOS booting.
+
+## Debug with UART
+
+When the system fails to boot, you can check the boot logs using tty.
+
+First, connect the USB to TTL cable to the UART0 interface of the Raspberry Pi 4A. Then, use tools like 'screen' or 'minicom' to read and write to the serial port device.
+
+```shell
+› ls /dev/ttyUSB0
+╭───┬──────────────┬─────────────┬──────┬───────────────╮
+│ # │     name     │    type     │ size │   modified    │
+├───┼──────────────┼─────────────┼──────┼───────────────┤
+│ 0 │ /dev/ttyUSB0 │ char device │  0 B │ 6 minutes ago │
+╰───┴──────────────┴─────────────┴──────┴───────────────╯
+
+› minicom -d /dev/ttyusb0 -b 115200
+```
+
+If everything is normal, you should be able to see the startup log at this point. An example is shown below:
+
+```
+Welcome to minicom 2.8
+brom_ver 8
+[APP][E] protocol_connect failed, exit.
+-----------------------------------------
+  _____             _  _____ _____  _  __
+ |  __ \           (_)/ ____|  __ \| |/ /
+ | |__) |   _ _   _ _| (___ | |  | | ' / 
+ |  _  / | | | | | | |\___ \| |  | |  <  
+ | | \ \ |_| | |_| | |____) | |__| | . \ 
+ |_|  \_\__,_|\__, |_|_____/|_____/|_|\_\
+               __/ |                     
+              |___/                      
+                    -- Presented by ISCAS
+-----------------------------------------
+
+U-Boot SPL 2020.01-gc931dc82 (Jul 19 2023 - 17:16:05 +0000)
+FM[1] lpddr4x dualrank freq=3733 64bit dbi_off=n sdram init
+ddr initialized, jump to uboot
+image has no header
+
+
+U-Boot 2020.01-gc931dc82 (Jul 19 2023 - 17:16:05 +0000)
+
+CPU:   rv64imafdcvsu
+Model: T-HEAD c910 light
+DRAM:  8 GiB
+C910 CPU FREQ: 750MHz
+AHB2_CPUSYS_HCLK FREQ: 250MHz
+AHB3_CPUSYS_PCLK FREQ: 125MHz
+PERISYS_AHB_HCLK FREQ: 250MHz
+PERISYS_APB_PCLK FREQ: 62MHz
+# ......
+Hit any key to stop autoboot:  0 
+85856 bytes read in 2 ms (40.9 MiB/s)
+Retrieving file: /extlinux/extlinux.conf
+869 bytes read in 1 ms (848.6 KiB/s)
+1:      NixOS - Default
+Retrieving file: /extlinux/../nixos/p5mnqd138g04r2ky25jqppiinfy8a9bj-initrd-k-riscv64-unknown-linux-gnu-d
+8964096 bytes read in 98 ms (87.2 MiB/s)
+Retrieving file: /extlinux/../nixos/7h8z0y2l6pr1dvlp3y6fgalghcl2pdwx-k-riscv64-unknown-linux-gnu-Image
+29405184 bytes read in 319 ms (87.9 MiB/s)
+append: init=/nix/store/5m21d2yswjpq47m1b32mc8359mfgdghx-nixos-system-nixos-23.05.20230624.3ef8b37/init 4
+Retrieving file: /extlinux/../nixos/7h8z0y2l6pr1dvlp3y6fgalghcl2pdwx-k-riscv64-unknown-linux-gnu-dtbs/thb
+87410 bytes read in 3 ms (27.8 MiB/s)
+## Flattened Device Tree blob at 01f00000
+   Booting using the fdt blob at 0x1f00000
+   Loading Ramdisk to 1f773000, end 1ffff800 ... OK
+   Using Device Tree in place at 0000000001f00000, end 0000000001f18571
+
+Starting kernel ...
+
+[    0.000000] Linux version 5.10.113 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 13.1.0, GN0
+[    0.000000] OF: fdt: Ignoring memory range 0x0 - 0x200000
+[    0.000000] earlycon: uart0 at MMIO32 0x000000ffe7014000 (options '115200n8')
+[    0.000000] printk: bootconsole [uart0] enabled
+[    2.331633] (NULL device *): failed to find vdmabuf_reserved_memory node
+[    2.472010] spi-nor spi0.0: unrecognized JEDEC id bytes: ff ff ff ff ff ff
+[    2.479021] dw_spi_mmio ffe700c000.spi: cs1 >= max 1
+[    2.484044] spi_master spi0: spi_device register error /soc/spi@ffe700c000/spidev@1
+[    2.514701] sdhci-dwcmshc ffe70a0000.sd: can't request region for resource [mem 0xffef014064-0xffef01]
+[    2.526443] misc vhost-vdmabuf: failed to find vdmabuf_reserved_memory node
+[    3.297567] debugfs: File 'SDOUT' in directory 'dapm' already present!
+[    3.304265] debugfs: File 'Playback' in directory 'dapm' already present!
+[    3.311109] debugfs: File 'Capture' in directory 'dapm' already present!
+[    3.317849] debugfs: File 'Playback' in directory 'dapm' already present!
+[    3.324694] debugfs: File 'Capture' in directory 'dapm' already present!
+[    3.338624] aw87519_pa 5-0058: aw87519_parse_dt: no reset gpio provided failed
+[    3.345901] aw87519_pa 5-0058: aw87519_i2c_probe: failed to parse device tree node
+
+<<< NixOS Stage 1 >>>
+
+running udev...
+Starting systemd-udevd version 253.5
+kbd_mode: KDSKBMODE: Inappropriate ioctl for device
+Gstarting device mapper and LVM...
+......
+```
+
+## How this repo works
 
 LicheePi 4A use RevyOS officially.
+The basic idea of this repo is to use revyos's kernel, u-boot and opensbi, with a NixOS rootfs, to get NixOS running on LicheePi 4A.
+
+## See Also
+
+There are other efforts to bring NixOS to RISC-V:
+
+- https://github.com/zhaofengli/nixos-riscv64
+- https://github.com/NickCao/nixos-riscv
 
 RevyOS's kernel, u-boot and opensbi:
 
@@ -72,74 +204,9 @@ RevyOS's prebuilt binaries download link:
 
 Official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
 
-the basic idea is to use revyos's kernel, u-boot and opensbi, with a NixOS rootfs, to get NixOS running on LicheePi 4A.
+And other efforts to bring Fedora to LicheePi 4A:
 
-We need 3 parts of images:
+- https://github.com/chainsx/fedora-riscv-builder
 
-- u-boot-with-spl-lpi4a.bin: the u-boot-loader which will be flashed into spl partition, not related to NixOS
-- boot.ext4: the boot partition, contains dtb, kernel image, opensbi, etc, we need to build it with NixOS,
-- rootfs.ext4: the rootfs partition, we need to build it with NixOS
+Special thanks to @NickCao, @chainsx, @revyos and @zhaofengli.
 
-We can download the prebuilt u-boot-with-spl-lpi4a.bin from here:
-
-- https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
-
-## Build boot & rootfs
-
-Build sdImage(which may take a long time, about 2 hours on my machine):
-
-```shell
-nix build .#nixosConfigurations.lp4a.config.system.build.sdImage --keep-failed
-```
-
-Extrace rootfs from sdImage:
-
-```shell
-# mount the image
-sudo losetup -P --show -f $(ls result/sd-image/nixos-*-riscv64-linux.img)
-
-# extract the rootfs partition
-sudo dd if=/dev/loop0p2 of=rootfs.ext4 bs=1M status=progress
-
-# umount the image
-sudo losetup -d /dev/loop0
-```
-
-## Flash images
-
-> Official Docs: https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/4_burn_image.html
-
-> The internal test development board does not support booting from SD card, we should flash images into the board's eMMC.
-
-According to the official docs, the flash process of the internal test version LP4A hardware is as follows:
-
-1. Press and hold the BOOT button on the board, then plug in the USB-C cable to power on (the other end of the cable is connected to the PC), and you can enter the USB burning mode (fastboot).
-   1. the command `lsusb | grep T-HEAD` should print `ID 2345:7654 T-HEAD USB download gadget`
-2. Then use the following command to flash the image into the board's eMMC.
-   1. The fastboot program can be downloaded directly from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or installed from the package manager.
-
-```shell
-# flash u-boot into spl partition
-sudo fastboot flash ram u-boot-with-spl.bin
-sudo fastboot reboot
-# flash uboot partition
-sudo fastboot flash uboot u-boot-with-spl.bin
-
-# flash nixos's rootfs partition
-sudo fastboot flash root rootfs.ext4
-```
-
-## Debug with QEMU
-
-Generate the image for QEMU:
-
-```shell
-nix build .#nixosConfigurations.qemu.config.system.build.sdImage --keep-failed
-```
-
-## See Also
-
-There are other efforts to bring NixOS to RISC-V:
-
-- https://github.com/zhaofengli/nixos-riscv64
-- https://github.com/NickCao/nixos-riscv

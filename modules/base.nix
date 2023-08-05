@@ -23,53 +23,29 @@
     wget
     curl
     aria2
+    lm_sensors  # for `sensors` command
 
     neofetch
-    # nnn      # terminal file manager
-    # btop     # replacement of htop/nmon
-    # htop
-    # iotop
-    # iftop
-    # nmon
-
-    # # system call monitoring
-    # strace
-    # ltrace  # library call monitoring
-    # lsof
-
-    # mtr      # A network diagnostic tool
-    # iperf3   # A tool for measuring TCP and UDP bandwidth performance
-    # nmap     # A utility for network discovery and security auditing
-    # ldns     # replacement of dig, it provide the command `drill`
-    # aria2    # A lightweight multi-protocol & multi-source command-line download utility
-    # socat    # replacement of openbsd-netcat
-    # tcpdump  # A powerful command-line packet analyzer
-
-    # # system tools
-    # ethtool
-    # sysstat
-    # lm_sensors  # for `sensors` command
-    # cifs-utils  # for mounting windows shares
+    ranger # terminal file manager
+    btop     # replacement of htop/nmon
+    iotop
+    iftop
 
     # # archives
-    # zip
-    # xz
-    # unzip
-    # p7zip
-    # zstd
-    # file
-    # which
-    # tree
-    # gnused
-    # gnutar
-    # gawk
+    zip
+    xz
+    unzip
+    p7zip
+    zstd
+    file
+    which
+    tree
+    gnused
+    gnutar
+    gawk
 
-    # # misc
-    # viu  # terminal image viewer
-    # cowsay
-    # caddy
-    # gnupg
-    # docker-compose
+    # misc
+    docker-compose
   ];
 
   # replace default editor with neovim
@@ -94,13 +70,13 @@
   };
 
   # TODO Define a user account. Don't forget to update this!
-  users.users.ryan = {
+  users.users.lp4a = {
     # To generate a hashed password run `mkpasswd`.
-    # this is the hash of the password "ryan"
-    hashedPassword = "$y$j9T$XdXelnTiFpSYTctcJktMq1$5PWX1enq.UAUM0v9kcdy1oDe/uq8t05doDoqaErt3w/";
+    # this is the hash of the password "lp4a"
+    hashedPassword = "$y$j9T$mTIe/80yqh53danHYbUkP1$2TYCUsFKnkBnHG6pArOv9t.e2ofxO.j1MIt/6rB05P1";
     isNormalUser = true;
-    home = "/home/ryan";
-    description = "ryan";
+    home = "/home/lp4a";
+    description = "nixos for licheepi4a";
     extraGroups = [ "users" "networkmanager" "wheel" "docker"];
     openssh.authorizedKeys.keys = [
         # TODO replace this with your own public key!

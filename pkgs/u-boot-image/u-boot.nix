@@ -1,6 +1,6 @@
 
 { lib, buildUBoot, fetchFromGitHub, opensbi }: buildUBoot rec {
-  version = "2023.06.25";
+  version = "2023.08.06";
   
   # https://github.com/chainsx/fedora-riscv-builder/blob/20230623-0255/build.sh#L120-L128
   src = fetchFromGitHub {
