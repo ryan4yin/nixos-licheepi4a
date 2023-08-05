@@ -1,14 +1,16 @@
 # NixOS on LicheePi 4A
 
-> work in progress, not working yet
+> work in progress.
 
 [[中文]](./README.zh.md)
 
 This repo contains the code to get NixOS running on LicheePi 4A.
 
+![](./_img/nixos-licheepi-neofetch.webp)
+
 ## TODO
 
-- [ ] generate boot partition in sdImage
+- [ ] release an image
 
 ## Parameters
 

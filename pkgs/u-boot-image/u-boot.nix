@@ -11,7 +11,7 @@
     # a custom kernel that supports reading /boot/extlinux/extlinux.conf
     owner = "chainsx";
     repo = "thead-u-boot";
-    rev = "dev";
+    rev = "extlinux";
     sha256 = "";
   };
 

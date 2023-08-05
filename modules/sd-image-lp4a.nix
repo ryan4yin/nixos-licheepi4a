@@ -5,6 +5,7 @@
 let
   light_aon_fpga = (pkgs.callPackage ../pkgs/firmware/light_aon_fpga.nix {});
   light_c906_audio = (pkgs.callPackage ../pkgs/firmware/light_c906_audio.nix {});
+  rootPartitionUUID = "14e19a7b-0ae0-484d-9d54-43bd6fdc20c7";
 in {
   # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image.nix
   imports = [
@@ -14,7 +15,7 @@ in {
   # https://github.com/chainsx/fedora-riscv-builder/blob/f46ae18/build.sh#L179-L184
   boot.kernelParams = [
     "console=ttyS0,115200"
-    "root=/dev/mmcblk0p3"  # use the third partition of the eMMC as rootfs, it's hardcoded in u-boot
+    "root=UUID=${rootPartitionUUID}"  # use the third partition of the eMMC as rootfs, it's hardcoded in u-boot
     "rootfstype=ext4"
     "rootwait"
     "rw"
@@ -39,6 +40,8 @@ in {
   };
 
   sdImage = {
+    inherit rootPartitionUUID;
+
     imageBaseName = "nixos-licheepi4a-sd-image";
     # for local usage, do not need to compress it.
     compressImage = false;

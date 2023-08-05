@@ -1,8 +1,14 @@
 # NixOS on LicheePi 4A
 
-> WIP 目前还没有成功启动
+> WIP
 
 This repo contains the code to get NixOS running on LicheePi 4A.
+
+![](./_img/nixos-licheepi-neofetch.webp)
+
+## TODO
+
+- [ ] release an image
 
 ## Parameters
 
@@ -161,6 +167,138 @@ sudo fastboot flash root rootfs.ext4
 ```shell
 sudo parted -s /dev/mmcblk0 "resizepart 3 -0"
 sudo resize2fs /dev/mmcblk0p3
+```
+
+## 通过 tty 查看启动日志
+
+在系统启动失败时，可以通过 tty 查看启动日志。
+
+首先使用 USB 转 TTL 线缆连接荔枝派 4A 的 UART0 接口，然后通过 `screen` 或者 `minicom` 等工具读写串口设备。
+
+```shell
+› ls /dev/ttyUSB0
+╭───┬──────────────┬─────────────┬──────┬───────────────╮
+│ # │     name     │    type     │ size │   modified    │
+├───┼──────────────┼─────────────┼──────┼───────────────┤
+│ 0 │ /dev/ttyUSB0 │ char device │  0 B │ 6 minutes ago │
+╰───┴──────────────┴─────────────┴──────┴───────────────╯
+
+# 通过 minocom 连接串口
+> minicom -d /dev/ttyusb0 -b 115200
+```
+
+一切正常的话，此时就可以看到启动日志了。
+
+
+我目前收到的错误日志：
+
+```
+Welcome to minicom 2.8
+brom_ver 8
+[APP][E] protocol_connect failed, exit.
+-----------------------------------------
+  _____             _  _____ _____  _  __
+ |  __ \           (_)/ ____|  __ \| |/ /
+ | |__) |   _ _   _ _| (___ | |  | | ' / 
+ |  _  / | | | | | | |\___ \| |  | |  <  
+ | | \ \ |_| | |_| | |____) | |__| | . \ 
+ |_|  \_\__,_|\__, |_|_____/|_____/|_|\_\
+               __/ |                     
+              |___/                      
+                    -- Presented by ISCAS
+-----------------------------------------
+
+U-Boot SPL 2020.01-gc931dc82 (Jul 19 2023 - 17:16:05 +0000)
+FM[1] lpddr4x dualrank freq=3733 64bit dbi_off=n sdram init
+ddr initialized, jump to uboot
+image has no header
+
+
+U-Boot 2020.01-gc931dc82 (Jul 19 2023 - 17:16:05 +0000)
+
+CPU:   rv64imafdcvsu
+Model: T-HEAD c910 light
+DRAM:  8 GiB
+C910 CPU FREQ: 750MHz
+AHB2_CPUSYS_HCLK FREQ: 250MHz
+AHB3_CPUSYS_PCLK FREQ: 125MHz
+PERISYS_AHB_HCLK FREQ: 250MHz
+PERISYS_APB_PCLK FREQ: 62MHz
+GMAC PLL POSTDIV FREQ: 1000MHZ
+DPU0 PLL POSTDIV FREQ: 1188MHZ
+DPU1 PLL POSTDIV FREQ: 1188MHZ
+MMC:   sdhci@ffe7080000: 0, sd@ffe7090000: 1
+Loading Environment from MMC... OK
+Error reading output register
+Warning: cannot get lcd-en GPIO
+LCD panel cannot be found : -121
+splash screen startup cost 16 ms
+In:    serial
+Out:   serial
+Err:   serial
+ethaddr: f2:7b:4b:18:36:9e
+eth1addr: f2:7b:4b:18:36:9f
+Net:   ethernet@ffe7070000 (eth0) using MAC address - f2:7b:4b:18:36:9e
+eth0: ethernet@ffe7070000ethernet@ffe7070000:0 is connected to ethernet@ffe7070000.  Reconnecting to eth0
+ethernet@ffe7060000 (eth1) using MAC address - f2:7b:4b:18:36:9f
+, eth1: ethernet@ffe7060000
+Hit any key to stop autoboot:  0 
+50340 bytes read in 1 ms (48 MiB/s)
+16388 bytes read in 1 ms (15.6 MiB/s)
+85856 bytes read in 2 ms (40.9 MiB/s)
+Retrieving file: /extlinux/extlinux.conf
+869 bytes read in 1 ms (848.6 KiB/s)
+1:      NixOS - Default
+Retrieving file: /extlinux/../nixos/p5mnqd138g04r2ky25jqppiinfy8a9bj-initrd-k-riscv64-unknown-linux-gnu-d
+8964096 bytes read in 98 ms (87.2 MiB/s)
+Retrieving file: /extlinux/../nixos/7h8z0y2l6pr1dvlp3y6fgalghcl2pdwx-k-riscv64-unknown-linux-gnu-Image
+29405184 bytes read in 319 ms (87.9 MiB/s)
+append: init=/nix/store/5m21d2yswjpq47m1b32mc8359mfgdghx-nixos-system-nixos-23.05.20230624.3ef8b37/init 4
+Retrieving file: /extlinux/../nixos/7h8z0y2l6pr1dvlp3y6fgalghcl2pdwx-k-riscv64-unknown-linux-gnu-dtbs/thb
+87410 bytes read in 3 ms (27.8 MiB/s)
+## Flattened Device Tree blob at 01f00000
+   Booting using the fdt blob at 0x1f00000
+   Loading Ramdisk to 1f773000, end 1ffff800 ... OK
+   Using Device Tree in place at 0000000001f00000, end 0000000001f18571
+
+Starting kernel ...
+
+[    0.000000] Linux version 5.10.113 (nixbld@localhost) (riscv64-unknown-linux-gnu-gcc (GCC) 13.1.0, GN0
+[    0.000000] OF: fdt: Ignoring memory range 0x0 - 0x200000
+[    0.000000] earlycon: uart0 at MMIO32 0x000000ffe7014000 (options '115200n8')
+[    0.000000] printk: bootconsole [uart0] enabled
+[    2.331633] (NULL device *): failed to find vdmabuf_reserved_memory node
+[    2.472010] spi-nor spi0.0: unrecognized JEDEC id bytes: ff ff ff ff ff ff
+[    2.479021] dw_spi_mmio ffe700c000.spi: cs1 >= max 1
+[    2.484044] spi_master spi0: spi_device register error /soc/spi@ffe700c000/spidev@1
+[    2.514701] sdhci-dwcmshc ffe70a0000.sd: can't request region for resource [mem 0xffef014064-0xffef01]
+[    2.526443] misc vhost-vdmabuf: failed to find vdmabuf_reserved_memory node
+[    3.297567] debugfs: File 'SDOUT' in directory 'dapm' already present!
+[    3.304265] debugfs: File 'Playback' in directory 'dapm' already present!
+[    3.311109] debugfs: File 'Capture' in directory 'dapm' already present!
+[    3.317849] debugfs: File 'Playback' in directory 'dapm' already present!
+[    3.324694] debugfs: File 'Capture' in directory 'dapm' already present!
+[    3.338624] aw87519_pa 5-0058: aw87519_parse_dt: no reset gpio provided failed
+[    3.345901] aw87519_pa 5-0058: aw87519_i2c_probe: failed to parse device tree node
+
+<<< NixOS Stage 1 >>>
+
+running udev...
+Starting systemd-udevd version 253.5
+kbd_mode: KDSKBMODE: Inappropriate ioctl for device
+Gstarting device mapper and LVM...
+waiting for device /dev/disk/by-label/NIXOS_SD to appear.......................
+Timed out waiting for device /dev/disk/by-label/NIXOS_SD, trying to mount anyway.
+mounting /dev/disk/by-label/NIXOS_SD on /...
+mount: mounting /dev/disk/by-label/NIXOS_SD on /mnt-root/ failed: No such file or directory
+
+An error occurred in stage 1 of the boot process, which must mount the
+root filesystem on `/mnt-root' and then start stage 2.  Press one
+of the following keys:
+
+  r) to reboot immediately
+  *) to ignore the error and continue
+
 ```
 
 ## 记录下一些分析流程

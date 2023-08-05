@@ -19,7 +19,6 @@
 
     # https://github.com/chainsx/fedora-riscv-builder
 
-
   };
 
   outputs = inputs@{ 
