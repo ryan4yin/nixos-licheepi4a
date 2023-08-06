@@ -191,26 +191,20 @@ The basic idea of this repo is to use revyos's kernel, u-boot and opensbi, with 
 
 ## See Also
 
-There are other efforts to bring NixOS to RISC-V:
-
-- https://github.com/zhaofengli/nixos-riscv64
-- https://github.com/NickCao/nixos-riscv
-
 RevyOS's kernel, u-boot and opensbi:
 
 - https://github.com/revyos/thead-kernel.git
 - https://github.com/revyos/thead-u-boot.git
 - https://github.com/revyos/thead-opensbi.git
 
-RevyOS's prebuilt binaries download link:
-
-- https://mirror.iscas.ac.cn/revyos/extra/images/lpi4a/
-
-Official article(Chinese): https://wiki.sipeed.com/hardware/zh/lichee/th1520/lpi4a/7_develop_revyos.html
-
 And other efforts to bring Fedora to LicheePi 4A:
 
 - https://github.com/chainsx/fedora-riscv-builder
 
-Special thanks to @NickCao, @chainsx, @revyos and @zhaofengli.
+And other efforts to bring NixOS to RISC-V:
+
+- https://github.com/zhaofengli/nixos-riscv64
+- https://github.com/NickCao/nixos-riscv
+
+Special thanks to @NickCao,  @revyos, @chainsx and @zhaofengli.
 
