@@ -118,6 +118,29 @@
       ];
     };
 
+    # cross-build an sd-image
+    nixosConfigurations.lp4a-cross-emmc = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+
+      specialArgs = {
+        inherit nixpkgs;
+        pkgsKernel = pkgsKernelCross;
+      };
+      modules = [
+        {
+          # cross-compilation this flake.
+          nixpkgs.crossSystem = {
+            system = "riscv64-linux";
+          };
+        }
+
+        ./modules/base
+        ./modules/emmc-image-lp4a.nix
+      ];
+    };
+
+
+
     # cross-build an qemu image
     nixosConfigurations.qemu = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -137,6 +160,14 @@
         ./modules/base
         ./modules/sd-image/sd-image-qemu.nix
       ];
+    };
+
+    packages.x86_64-linux = {
+      sdImage = self.nixosConfigurations.lp4a-cross.config.system.build.sdImage;
+
+      rootfs = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.rootfsImage;
+      boot = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.bootImage;
+      uboot = pkgsKernelCross.callPackage ./pkgs/u-boot {};
     };
 
     # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.

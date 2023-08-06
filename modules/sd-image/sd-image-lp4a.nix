@@ -1,4 +1,4 @@
-#
+# Generate sdImage for LicheePi 4A
 { config, lib, modulesPath, pkgs, pkgsKernel, ... }: 
 let
   rootPartitionUUID = "14e19a7b-0ae0-484d-9d54-43bd6fdc20c7";
@@ -10,7 +10,7 @@ in {
   # https://github.com/chainsx/fedora-riscv-builder/blob/f46ae18/build.sh#L179-L184
   boot.kernelParams = [
     "console=ttyS0,115200"
-    "root=UUID=${rootPartitionUUID}"  # use the third partition of the eMMC as rootfs, it's hardcoded in u-boot
+    "root=UUID=${rootPartitionUUID}"
     "rootfstype=ext4"
     "rootwait"
     "rw"
