@@ -16,9 +16,11 @@ Default user: `lp4a`, default password: `lp4a`.
 - [ ] support flashing rootfs into emmc
 - [ ] debug with qemu
 - [ ] verify all the hardware features available by th1520
+    - [x] ethernet (rj45)
     - wifi/bluetooth
     - audio
-    - gpio
+    - [x] gpio
+    - [x] uart/ttl
     - gpu
     - npu
     - ...
@@ -48,9 +50,9 @@ sudo losetup --find --partscan nixos-lp4a.img
 # check rootfs's status, it's broken.
 sudo fsck /dev/loop0p2
 
+echo w | sudo fdisk /dev/loop0
 # increase the rootfs's partition size & file system size
 nix shell nixpkgs#cloud-utils
-echo w | sudo fdisk /dev/loop0
 sudo growpart /dev/loop0 2
 
 # check rootfs's status again, it should be normal now.

@@ -1,5 +1,7 @@
 let
   username = "lp4a";
+  # TODO replace this with your own public key!
+  publickey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK3F3AH/vKnA2vxl72h67fcxhIK8l+7F/bdE1zmtwTVU ryan@romantic";
 in
 {
   # =========================================================================
@@ -16,30 +18,16 @@ in
     description = "nixos for licheepi4a";
     extraGroups = [ "users" "networkmanager" "wheel" "docker"];
     openssh.authorizedKeys.keys = [
-        # TODO replace this with your own public key!
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL7hMSL3g0AGEofxFHWHAcg5FQT/YPkB7T+f2vuVVe91 ryan@gluttony"
+      publickey
     ];
   };
+
+  users.users.root.openssh.authorizedKeys.keys = [
+    publickey
+  ];
 
   users.groups = {
     "${username}" = {};
     docker = {};
   };
-
-  # DO NOT promote user to input password for sudo.
-  # this is a workaround for the issue of remote deploy:
-  #   https://github.com/NixOS/nixpkgs/issues/118655
-  #
-  # Feel free to remove this if you don't need it.
-  security.sudo.extraRules = [
-    {
-      users = [ username ];
-      commands = [
-        {
-          command = "ALL";
-          options = ["NOPASSWD"];
-        }
-      ];
-    }
-  ];
 }

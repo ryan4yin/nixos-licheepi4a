@@ -25,17 +25,16 @@
     "btrfs"
   ];
 
-  # allow missing modules, only enable this for testing!
-  # nixpkgs.overlays = [
-  #   (_: super: {makeModulesClosure = x: super.makeModulesClosure (x // {allowMissing = true;});})
-  # ];
-
   environment.systemPackages = with pkgs; [
+    # Peripherals
     mtdutils
+    i2c-tools
+    minicom
+    guvcview  # webcam
+    fswebcam  # webcam
   ];
 
   powerManagement.cpuFreqGovernor = "ondemand";
-
   hardware = {
     deviceTree = {
       # https://github.com/revyos/thead-kernel/blob/lpi4a/arch/riscv/boot/dts/thead/light-lpi4a.dts
@@ -46,7 +45,6 @@
       ];
     };
     enableRedistributableFirmware = true;
-
 
     # TODO GPU driver
     opengl = {
