@@ -2,8 +2,11 @@
 #
 #  https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/installer/sd-card/sd-image.nix
 #
-# chainsx provides a U-Boot where normal Distro Boot(extlinux.conf) works well.
-# but it requires the first partition to be /boot and the second partition to be /.
+# chainsx provides a U-Boot where normal Distro Boot(extlinux.conf) works well. but:
+#     1. it requires the first partition to be /boot and the second partition to be /.
+#     1. it requires the the partition table to be GPT instead of MBR/DOS.
+#
+# To resolve the above issues, we need to patch the sd-image.nix. that's what this file does.
 #
 # This module creates a bootable SD card image containing the given NixOS
 # configuration. The generated image is MBR partitioned, with a FAT
