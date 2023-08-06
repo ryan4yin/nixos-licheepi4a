@@ -11,7 +11,7 @@ Default user: `lp4a`, default password: `lp4a`.
 ## TODO
 
 - [x] release an image
-- [ ] build opensbi with nix
+- [x] build opensbi with nix
 - [ ] build u-boot with nix
 - [ ] support flashing rootfs into emmc
 - [ ] debug with qemu
