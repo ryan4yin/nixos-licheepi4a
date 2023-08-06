@@ -64,7 +64,7 @@ sudo losetup -d /dev/loop0
 
 > Official Docs: https://wiki.sipeed.com/hardware/en/lichee/th1520/lpi4a/4_burn_image.html
 
-According to the official docs, the flash process of the internal test version LP4A hardware is as follows:
+According to the official docs, the flash process of LicheePi 4A is as follows:
 
 1. Press and hold the BOOT button on the board, then plug in the USB-C cable to power on (the other end of the cable is connected to the PC), and you can enter the USB burning mode (fastboot).
    1. the command `lsusb | grep T-HEAD` should print `ID 2345:7654 T-HEAD USB download gadget`
