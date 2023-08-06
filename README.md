@@ -15,6 +15,13 @@ Default user: `lp4a`, default password: `lp4a`.
 - [ ] build u-boot with nix
 - [ ] support flashing rootfs into emmc
 - [ ] debug with qemu
+- [ ] verify all the hardware features available by th1520
+    - wifi/bluetooth
+    - audio
+    - gpio
+    - gpu
+    - npu
+    - ...
 
 ## Build boot & rootfs image
 
@@ -83,9 +90,41 @@ Finally, flash boot & rootfs into SD card:
 ```bash
 zstd -d nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst
 sudo dd if=nixos-licheepi4a-sd-image-xxx-riscv64-linux.img of=/dev/sdX bs=4M status=progress
+
+# fix the wrong physical sector size
+sudo parted /dev/sdb
 ```
 
 Now insert the SD card into the board, and power on, you should see NixOS booting.
+
+## Flash into eMMC
+
+> Not verified yet, may not work.
+
+```shell
+nix build .#boot -L --show-trace
+cp result boot.ext4
+
+nix build .#rootfs -L --show-trace
+cp result rootfs.ext4
+```
+
+Flash boot and rootfs partition into eMMC:
+
+```bash
+# flash u-boot into spl partition
+sudo fastboot flash ram u-boot-with-spl.bin
+sudo fastboot reboot
+# flash uboot partition
+sudo fastboot flash uboot u-boot-with-spl.bin
+
+# flash nixos's boot partition
+sudo fastboot flash boot boot.ext4
+# flash nixos's rootfs partition
+sudo fastboot flash root rootfs.ext4
+```
+
+All the partitions are predefined in the u-boot, so we have to flash the partitions into the right place.
 
 ## Debug with UART
 
