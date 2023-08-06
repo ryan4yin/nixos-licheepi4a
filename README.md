@@ -30,7 +30,7 @@ Default user: `lp4a`, default password: `lp4a`.
 Build sdImage(which may take a long time, about 2 hours on my machine):
 
 ```shell
-nix build .#nixosConfigurations.lp4a.config.system.build.sdImage -L --show-trace
+nix build .#nixosConfigurations.lp4a-cross.config.system.build.sdImage -L --show-trace
 ```
 
 It take about 2 hours on my machine to build the image.
@@ -99,7 +99,7 @@ Now insert the SD card into the board, and power on, you should see NixOS bootin
 
 ## Flash into eMMC
 
-> Not verified yet, may not work.
+> TODO work in prgress, not working yet.
 
 ```shell
 nix build .#boot -L --show-trace
