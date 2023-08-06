@@ -128,7 +128,7 @@ All the partitions are predefined in the u-boot, so we have to flash the partiti
 
 ## Debug with UART
 
-When the system fails to boot, you can check the boot logs using tty.
+When the system fails to boot, you can check the boot logs through pins of UART0.
 
 First, connect the USB to TTL cable to the UART0 interface of the Raspberry Pi 4A. Then, use tools like 'screen' or 'minicom' to read and write to the serial port device.
 
