@@ -103,6 +103,9 @@ First, connect the USB to TTL cable to the UART0 interface of the Raspberry Pi 4
 › minicom -d /dev/ttyusb0 -b 115200
 ```
 
+![](./_img/lp4a-pinout-debuglog-1.webp)
+![](./_img/lp4a-pinout-debuglog-2.webp)
+
 If everything is normal, you should be able to see the startup log at this point. An example is shown below:
 
 ```
