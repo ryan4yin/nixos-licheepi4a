@@ -44,7 +44,7 @@ nix build .#sdImage -L --show-trace
 
 After the build is complete, the image will be in `result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img`.
 
-The image has some problem currently, we need to fix the partition sized by the following commands:
+The image has some problem currently, we need to fix the partition size by the following commands:
 
 ```bash
 cp result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img nixos-lp4a.img
