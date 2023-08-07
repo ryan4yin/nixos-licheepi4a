@@ -1,7 +1,5 @@
 # NixOS on LicheePi 4A
 
-> work in progress.
-
 This repo contains the code to get NixOS running on LicheePi 4A.
 
 ![](./_img/nixos-licheepi-neofetch.webp)
