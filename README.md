@@ -11,8 +11,8 @@ Default user: `lp4a`, default password: `lp4a`.
 ## TODO
 
 - [x] release an image
-- [x] build opensbi with nix
-- [ ] build u-boot with nix
+- [x] build opensbi from source
+- [x] build u-boot from source
 - [ ] support flashing rootfs into emmc
 - [ ] debug with qemu
 - [ ] verify all the hardware features available by th1520
@@ -25,9 +25,18 @@ Default user: `lp4a`, default password: `lp4a`.
     - npu
     - ...
 
-## Build boot & rootfs image
+## Build u-boot & sdImage
 
 > You can skip this step if you just want to flash the prebuilt image.
+
+
+Build u-boot:
+
+```shell
+nix build .#uboot -L --show-trace
+```
+
+After the build is complete, the u-boot will be in `result/u-boot-with-spl.bin`, please copy it to another place for later use.
 
 Build sdImage(which may take a long time, about 2 hours on my machine):
 
@@ -35,7 +44,6 @@ Build sdImage(which may take a long time, about 2 hours on my machine):
 nix build .#sdImage -L --show-trace
 ```
 
-It take about 2 hours on my machine to build the image.
 After the build is complete, the image will be in `result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img`.
 
 The image has some problem currently, we need to fix the partition sized by the following commands:
@@ -73,9 +81,7 @@ According to the official docs, the flash process of LicheePi 4A is as follows:
 2. Then use the following command to flash the image into the board's eMMC.
    1. The fastboot program can be downloaded directly from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or installed from the package manager.
 
-So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst` from [releases](https://github.com/ryan4yin/nixos-licheepi4a/releases).
-
-> The `u-boot-with-spl.bin` are built from [chainsx/fedora-riscv-builder](https://github.com/chainsx/fedora-riscv-builder/releases) currently.
+So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst` from [releases](https://github.com/ryan4yin/nixos-licheepi4a/releases), or build them by yourself.
 
 Then, flash into the board's spl partition and uboot partition:
 
@@ -90,8 +96,10 @@ sudo fastboot flash uboot u-boot-with-spl.bin
 Finally, flash boot & rootfs into SD card:
 
 ```bash
-zstd -d nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst
-sudo dd if=nixos-licheepi4a-sd-image-xxx-riscv64-linux.img of=/dev/sdX bs=4M status=progress
+mv nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst nixos-lp4a.img.zst
+zstd -d nixos-lp4a.img.zst
+# please replace `/dev/sdX` with your SD card's device name
+sudo dd if=nixos-lp4a.img of=/dev/sdX bs=4M status=progress
 
 # fix the wrong physical sector size
 sudo parted /dev/sdb
