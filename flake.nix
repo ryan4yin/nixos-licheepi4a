@@ -186,7 +186,7 @@
             pkgconfig
             ncurses
 
-            pkgsKernel.gcc13Stdenv.cc
+            pkgsKernelCross.gcc13Stdenv.cc
             gcc
           ]
           ++ pkgs.linux.nativeBuildInputs);
