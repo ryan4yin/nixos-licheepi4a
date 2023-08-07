@@ -1,9 +1,11 @@
-# args of buildLinux:
+# =================================================================================================
+# function `buildLinux`:
 #   https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/os-specific/linux/kernel/generic.nix
 # Note that this method will use the deconfig in source tree, 
-# commbined the common configuration defined in pkgs/os-specific/linux/kernel/common-config.nix, which is suitable for a NixOS system.
-# but it't not suitable for embedded systems, so we comment it out.
-# ================================================================
+# commbined the common configuration defined in pkgs/os-specific/linux/kernel/common-config.nix, 
+# it't not suitable for embedded systems, so we can NOT use it here.
+# Instead, we need to use the method `linuxManualConfig` to build the kernel.
+# =================================================================================================
 
 # If you already have a generated configuration file, you can build a kernel that uses it with pkgs.linuxManualConfig
 # The difference between deconfig and the generated configuration file is that the generated configuration file is more complete,
