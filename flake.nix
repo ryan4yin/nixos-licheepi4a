@@ -163,11 +163,13 @@
     };
 
     packages.x86_64-linux = {
+      # u-boot & sdImage for boot from sdcard.
+      uboot = pkgsKernelCross.callPackage ./pkgs/u-boot {};
       sdImage = self.nixosConfigurations.lp4a-cross.config.system.build.sdImage;
 
-      rootfs = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.rootfsImage;
+      # (WIP)the rootfs and boot image for boot from emmc.
       boot = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.bootImage;
-      uboot = pkgsKernelCross.callPackage ./pkgs/u-boot {};
+      rootfs = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.rootfsImage;
     };
 
     # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.
