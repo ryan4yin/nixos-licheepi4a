@@ -1,5 +1,6 @@
 let
   username = "lp4a";
+  hostname = "lp4a";
   # To generate a hashed password run `mkpasswd`.
   # this is the hash of the password "lp4a"
   hashedPassword = "$y$j9T$mTIe/80yqh53danHYbUkP1$2TYCUsFKnkBnHG6pArOv9t.e2ofxO.j1MIt/6rB05P1";
@@ -9,6 +10,8 @@ in {
   # =========================================================================
   #      Users & Groups NixOS Configuration
   # =========================================================================
+
+  networking.hostName = hostname;
 
   # TODO Define a user account. Don't forget to update this!
   users.users."${username}" = {

@@ -138,6 +138,10 @@ All the partitions are predefined in the u-boot, so we have to flash the partiti
 
 See [Debug.md](./Debug.md)
 
+## Deploy
+
+See [Deploy.md](./Deploy.md)
+
 ## How this repo works
 
 LicheePi 4A use RevyOS officially.

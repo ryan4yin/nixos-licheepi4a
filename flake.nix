@@ -82,20 +82,6 @@
       inherit overlays;
     };
   in {
-    # deploy the config natively, or build sd-image natively.
-    nixosConfigurations.lp4a = nixpkgs.lib.nixosSystem {
-      system = "riscv64-linux";
-
-      specialArgs = {
-        inherit nixpkgs;
-        pkgsKernel = pkgsKernelNative;
-      };
-      modules = [
-        ./modules/base
-        ./modules/sd-image/sd-image-lp4a.nix
-      ];
-    };
-
     # cross-build an sd-image
     nixosConfigurations.lp4a-cross = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -112,8 +98,9 @@
           };
         }
 
-        ./modules/base
+        ./modules/licheepi4a.nix
         ./modules/sd-image/sd-image-lp4a.nix
+        ./modules/user-group.nix
       ];
     };
 
@@ -133,29 +120,9 @@
           };
         }
 
-        ./modules/base
+        ./modules/licheepi4a.nix
         ./modules/emmc-image-lp4a.nix
-      ];
-    };
-
-    # cross-build an qemu image
-    nixosConfigurations.qemu = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-
-      specialArgs = {
-        inherit nixpkgs;
-        pkgsKernel = pkgsKernelCross;
-      };
-      modules = [
-        {
-          # cross-compilation this flake.
-          nixpkgs.crossSystem = {
-            system = "riscv64-linux";
-          };
-        }
-
-        ./modules/base
-        ./modules/sd-image/sd-image-qemu.nix
+        ./modules/user-group.nix
       ];
     };
 
