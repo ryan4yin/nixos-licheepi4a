@@ -167,6 +167,10 @@
       # (WIP)the rootfs and boot image for boot from emmc.
       boot = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.bootImage;
       rootfs = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.rootfsImage;
+
+      # the nixpkgs
+      pkgsKernelCross = pkgsKernelCross;
+      pkgsKernelNative = pkgsKernelNative;
     };
 
     # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.
