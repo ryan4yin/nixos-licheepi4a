@@ -9,8 +9,12 @@ To avoid this, you can deploy your configuration remotely on a high performance 
 
 ## Deploying remotely with colmena
 
+
+Modify the nix files in this directory to fit your needs.
+
+Then, run the following command to deploy the configuration to your remote server:
+
 ```bash
-cd example
 nix run nixpkgs#colmena apply 
 ```
 
