@@ -1,12 +1,15 @@
 # Deployment
 
-> WIP, not working yet.
+> WIP, use at your own risk.
 
 The sdImage built from this flake lacks configuration & cache for compilation.
 Consequently, if you intend to execute an application not present within the sdImage, such as `nix run nixpkgs#cowsay hello`, nix will try to build `cowsay` and all its dependencies from scratch. This can take a long time!
 
 To avoid this, you can deploy your configuration remotely on a high performance machine, this can be done with [colmena](https://github.com/zhaofengli/colmena).
 
+If you're not familiar with remote deployment, please read this tutorial first: [Remote Deployment - NixOS & Flakes Book](https://nixos-and-flakes.thiscute.world/best-practices/remote-deployment)
+
+## Deploying remotely with colmena
 
 First, create a file `flake.nix` with the following content:
 
@@ -17,10 +20,9 @@ First, create a file `flake.nix` with the following content:
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05-small";
     nixos-licheepi4a.url = "github:ryan4yin/nixos-licheepi4a";
-    deploy-rs.url = "github:serokell/deploy-rs";
   };
 
-  outputs = { self, nixpkgs, nixos-licheepi4a, deploy-rs }: let
+  outputs = { self, nixpkgs, nixos-licheepi4a }: let
     system = "x86_64-linux";
   in {
     colmena = {
@@ -44,9 +46,12 @@ First, create a file `flake.nix` with the following content:
             };
           }
 
+          # import the licheepi4a module, which contains the configuration for bootloader/kernel/firmware
           (nixos-licheepi4a + "/modules/licheepi4a.nix")
+          # import the sd-image module, which contains the fileSystems & kernel parameters for booting from sd card.
           (nixos-licheepi4a + "/modules/sd-image/sd-image-lp4a.nix")
 
+          # your custom configuration
           ./configuration.nix
           ./user-group.nix
         ];
