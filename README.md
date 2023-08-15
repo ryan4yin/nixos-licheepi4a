@@ -138,7 +138,7 @@ All the partitions are predefined in the u-boot, so we have to flash the partiti
 
 See [Debug.md](./Debug.md)
 
-## Deployment Demo
+## Custom Deployment
 
 See [Demo - Deployment](./demo)
 
