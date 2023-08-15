@@ -31,3 +31,7 @@ warning: Git tree '/home/ryan/codes/nixos-licheepi4a' is dirty
 If you're not familiar with remote deployment, please read this tutorial first: [Remote Deployment - NixOS & Flakes Book](https://nixos-and-flakes.thiscute.world/best-practices/remote-deployment)
 
 
+## Notes on Network Proxy
+
+If you are in a network environment that requires proxy(such as China), you may need to set up proxies or bypass routes to speed up downloads on both your local host and development board, otherwise your NixOS experience may be quite bad.
+
