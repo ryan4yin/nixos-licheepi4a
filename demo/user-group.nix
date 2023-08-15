@@ -13,7 +13,7 @@ in {
   #      Users & Groups NixOS Configuration
   # =========================================================================
 
-  networking.hostName = hostname;
+  networking.hostName = hostName;
 
   # TODO Define a user account. Don't forget to update this!
   users.users."${username}" = {
