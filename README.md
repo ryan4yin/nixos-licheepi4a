@@ -123,6 +123,20 @@ scp nixos-lp4a.img lp4a@<ip-of-your-board>:~/
 # login to the board via ssh or serial port
 ssh lp4a@<ip-of-your-board>
 
+# check all the block devices
+# you should see mmcblk0(eMMC) & mmcblk1(SD card)
+$ lsblk
+NAME         MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+mmcblk0      179:0    0  29.1G  0 disk 
+├─mmcblk0p1  179:1    0   240M  0 part 
+└─mmcblk0p2  179:2    0   1.6G  0 part 
+mmcblk0boot0 179:8    0     4M  1 disk 
+mmcblk0boot1 179:16   0     4M  1 disk 
+mmcblk1      179:24   0 117.8G  0 disk 
+├─mmcblk1p1  179:25   0   200M  0 part 
+└─mmcblk1p2  179:26   0 117.5G  0 part /nix/store
+                                       /
+
 # flash the image into the board's eMMC
 sudo dd if=nixos-lp4a.img of=/dev/mmcblk0 bs=4M status=progress
 ```
