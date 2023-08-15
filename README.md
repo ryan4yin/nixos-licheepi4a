@@ -138,9 +138,9 @@ All the partitions are predefined in the u-boot, so we have to flash the partiti
 
 See [Debug.md](./Debug.md)
 
-## Deployment
+## Deployment Demo
 
-See [Deployment.md](./Deployment.md)
+See [Demo - Deployment](./demo)
 
 ## How this repo works
 
