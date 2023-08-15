@@ -13,6 +13,8 @@ Default user: `lp4a`, default password: `lp4a`.
 - [x] build u-boot from source
 - [ ] support flashing rootfs into emmc
 - [ ] debug with qemu
+- [ ] fix the sdImage's file size
+- [ ] fix the sdImage's auto resize after the first boot.
 - [ ] verify all the hardware features available by th1520
     - [x] ethernet (rj45)
     - wifi/bluetooth
