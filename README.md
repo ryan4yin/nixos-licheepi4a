@@ -11,7 +11,7 @@ Default user: `lp4a`, default password: `lp4a`.
 - [x] release an image
 - [x] build opensbi from source
 - [x] build u-boot from source
-- [ ] support flashing rootfs into emmc
+- [x] support boot from emmc
 - [ ] debug with qemu
 - [ ] fix the sdImage's file size
 - [ ] fix the sdImage's auto resize after the first boot.
@@ -112,34 +112,26 @@ Now insert the SD card into the board, and power on, you should see NixOS bootin
 
 ## Flash into eMMC
 
-> :warning: TODO work in prgress, not working yet.
+To flash the image into the board's eMMC, you need to flash the image into the board and start into NixOS first.
 
-```shell
-nix build .#boot -L --show-trace
-cp result boot.ext4
-
-nix build .#rootfs -L --show-trace
-cp result rootfs.ext4
-```
-
-Flash boot and rootfs partition into eMMC:
+Then, use the following command to flash the image into the board's eMMC:
 
 ```bash
-# flash u-boot into spl partition
-sudo fastboot flash ram u-boot-with-spl.bin
-sudo fastboot reboot
-# flash uboot partition
-sudo fastboot flash uboot u-boot-with-spl.bin
+# upload the sdImage to the NixOS system on the board
+scp nixos-lp4a.img lp4a@<ip-of-your-board>:~/
 
-# flash nixos's boot partition
-sudo fastboot flash boot boot.ext4
-# flash nixos's rootfs partition
-sudo fastboot flash root rootfs.ext4
+# login to the board via ssh or serial port
+ssh lp4a@<ip-of-your-board>
+
+# flash the image into the board's eMMC
+sudo dd if=nixos-lp4a.img of=/dev/mmcblk0 bs=4M status=progress
 ```
 
-All the partitions are predefined in the u-boot, so we have to flash the partitions into the right place.
+After the flash is complete, remove the SD card and reboot, you should see NixOS booting from eMMC.
 
-## Debug
+> Due to the problem of the image, you need to resize the rootfs manually after the first boot.
+
+## Debug via serial port
 
 See [Debug.md](./Debug.md)
 

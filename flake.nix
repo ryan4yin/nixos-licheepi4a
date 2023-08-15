@@ -104,36 +104,10 @@
       ];
     };
 
-    # cross-build an sd-image
-    nixosConfigurations.lp4a-cross-emmc = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-
-      specialArgs = {
-        inherit nixpkgs;
-        pkgsKernel = pkgsKernelCross;
-      };
-      modules = [
-        {
-          # cross-compilation this flake.
-          nixpkgs.crossSystem = {
-            system = "riscv64-linux";
-          };
-        }
-
-        ./modules/licheepi4a.nix
-        ./modules/emmc-image-lp4a.nix
-        ./modules/user-group.nix
-      ];
-    };
-
     packages.x86_64-linux = {
       # u-boot & sdImage for boot from sdcard.
       uboot = pkgsKernelCross.callPackage ./pkgs/u-boot {};
       sdImage = self.nixosConfigurations.lp4a-cross.config.system.build.sdImage;
-
-      # (WIP)the rootfs and boot image for boot from emmc.
-      boot = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.bootImage;
-      rootfs = self.nixosConfigurations.lp4a-cross-emmc.config.system.build.rootfsImage;
 
       # the nixpkgs
       pkgsKernelCross = pkgsKernelCross;
