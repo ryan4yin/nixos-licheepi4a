@@ -112,6 +112,16 @@
       # the nixpkgs
       pkgsKernelCross = pkgsKernelCross;
       pkgsKernelNative = pkgsKernelNative;
+
+      # the custom kernel, only used for debugging.
+      # use `nix develop .#kernel` to enter the environment with the custom kernel build environment available.
+      # and then use `unpackPhase` to unpack the kernel source code and cd into it.
+      # then you can use `make menuconfig` to configure the kernel.
+      # 
+      # problem
+      #   - using `make menuconfig` - Unable to find the ncurses package.
+      #   - using `make revyos_defconfig` - awk not found.
+      kernel = pkgsKernelCross.linuxPackages_thead.kernel.dev;
     };
 
     # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.

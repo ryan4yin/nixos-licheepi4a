@@ -25,11 +25,11 @@
     "thead-kernel": {
       "flake": false,
       "locked": {
-        "lastModified": 1687607314,
-        "narHash": "sha256-9R+XY18uDuMWjVzLkg4lTmxDltsvyI51qvm34SNVI4I=",
+        "lastModified": 1690916574,
+        "narHash": "sha256-JLYpM/Fbt71b7d7NEjUWtcSoO6ugczyCz9nql7eN2ds=",
         "owner": "revyos",
         "repo": "thead-kernel",
-        "rev": "9c58afc7addc5a4a5deef24dfe6a4a103549d3da",
+        "rev": "8631d2c44f1160e75a940718c11d678b8e314710",
         "type": "github"
       },
       "original": {
