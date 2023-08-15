@@ -15,3 +15,5 @@ outputs/
 *.img
 *.log
 *.zst
+
+**/.DS_Store
