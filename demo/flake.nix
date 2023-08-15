@@ -19,7 +19,8 @@
       };
 
       lp4a = { name, nodes, ... }: {
-        deployment.targetHost = "192.168.5.42";
+        # Set this ip to your licheepi4a board ip address.
+        deployment.targetHost = "192.168.5.104";
         deployment.targetUser = "root";
 
         imports = [

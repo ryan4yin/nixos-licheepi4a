@@ -49,6 +49,7 @@ The image has some problem currently, we need to fix the partition size by the f
 ```bash
 cp result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img nixos-lp4a.img
 
+chmod +w nixos-lp4a.img
 # increase img's file size
 dd if=/dev/zero bs=1M count=16 >> nixos-lp4a.img
 sudo losetup --find --partscan nixos-lp4a.img
