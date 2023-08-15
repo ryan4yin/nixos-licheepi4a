@@ -140,6 +140,9 @@ See [Debug.md](./Debug.md)
 
 ## Custom Deployment
 
+You can use this flake as an input to build your own configuration.
+This directory contains an example configuration that you can use as a starting point.
+
 See [Demo - Deployment](./demo)
 
 ## How this repo works
