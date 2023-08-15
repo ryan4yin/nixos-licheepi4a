@@ -33,7 +33,7 @@ in {
       # Alternatively, this could be removed from the configuration.
       # The filesystem is not needed at runtime, it could be treated
       # as an opaque blob instead of a discrete FAT32 filesystem.
-      options = [ "nofail" "noauto" ];
+      options = [ "nofail" ];
     };
     "/" = {
       device = "/dev/disk/by-label/NIXOS_SD";
