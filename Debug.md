@@ -3,7 +3,7 @@
 
 When the system fails to boot, you can check the boot logs through pins of UART0.
 
-First, connect the USB to TTL cable to the UART0 interface of the Raspberry Pi 4A. Then, use tools like 'screen' or 'minicom' to read and write to the serial port device.
+First, connect the USB to TTL cable to the UART0 interface of the LicheePi 4A. Then, use tools like 'screen' or 'minicom' to read and write to the serial port device.
 
 ```shell
 › ls /dev/ttyUSB0
