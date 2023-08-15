@@ -11,7 +11,7 @@ Default user: `lp4a`, default password: `lp4a`.
 - [x] release an image
 - [x] build opensbi from source
 - [x] build u-boot from source
-- [x] support boot from emmc
+- [x] support for booting from emmc
 - [ ] debug with qemu
 - [ ] fix the sdImage's file size
 - [ ] fix the sdImage's auto resize after the first boot.
