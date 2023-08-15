@@ -108,6 +108,8 @@ sudo parted /dev/sdb
 
 Now insert the SD card into the board, and power on, you should see NixOS booting.
 
+> Due to the problem of the image, you need to resize the rootfs manually after the first boot.
+
 ## Flash into eMMC
 
 > :warning: TODO work in prgress, not working yet.
