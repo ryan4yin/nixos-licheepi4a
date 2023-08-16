@@ -11,6 +11,7 @@
   in {
     colmena = {
       meta = {
+        # using the same nixpkgs as nixos-licheepi4a to utilize the cross-compilation cache.
         nixpkgs = import nixos-licheepi4a.inputs.nixpkgs { inherit system; };
         specialArgs = {
           pkgsKernel = nixos-licheepi4a.packages.${system}.pkgsKernelCross;
