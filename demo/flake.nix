@@ -6,16 +6,15 @@
     nixos-licheepi4a.url = "github:ryan4yin/nixos-licheepi4a";
   };
 
-  outputs = { self, nixpkgs, nixos-licheepi4a }: let
+  outputs = { self, nixpkgs, nixos-licheepi4a, ... } @ inputs: let
     system = "x86_64-linux";
   in {
     colmena = {
       meta = {
-        nixpkgs = import nixpkgs { inherit system; };
+        nixpkgs = import nixos-licheepi4a.inputs.nixpkgs { inherit system; };
         specialArgs = {
-          inherit nixpkgs;
           pkgsKernel = nixos-licheepi4a.packages.${system}.pkgsKernelCross;
-        };
+        } // inputs;
       };
 
       lp4a = { name, nodes, ... }: {
