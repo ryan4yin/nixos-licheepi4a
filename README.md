@@ -104,7 +104,8 @@ zstd -d nixos-lp4a.img.zst
 sudo dd if=nixos-lp4a.img of=/dev/sdX bs=4M status=progress
 
 # fix the wrong physical sector size
-sudo parted /dev/sdb
+# please replace `/dev/sdX` with your SD card's device name
+sudo parted /dev/sdX
 ```
 
 Now insert the SD card into the board, and power on, you should see NixOS booting.
