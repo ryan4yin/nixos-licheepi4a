@@ -15,6 +15,9 @@ Modify the nix files in this directory to fit your needs.
 Then, run the following command to deploy the configuration to your remote server:
 
 ```bash
+# I have uploaded the build cache to cachix, you can use it to speed up builds.
+› nix run nixpkgs#cachix -- use licheepi4a
+
 › nix run nixpkgs#colmena apply 
 
 warning: Git tree '/home/ryan/codes/nixos-licheepi4a' is dirty

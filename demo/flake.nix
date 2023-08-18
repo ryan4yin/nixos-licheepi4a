@@ -1,19 +1,6 @@
 {
   description = "NixOS configuration for licheepi4a remote deployment";
 
-  # the nixConfig here only affects the flake itself, not the system configuration!
-  # This is a cache server provided by me, feel free to remove it if you don't trust me.
-  nixConfig = {
-    substituters = [
-      "https://licheepi4a.cachix.org"
-    ];
-
-    extra-trusted-public-keys = [
-      "licheepi4a.cachix.org-1:oHyaY5wsuQ4+JjpZOQWTlxxd7c0fYfTjUCNCSP5gkJg="
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    ];
-  };
-
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05-small";
     nixos-licheepi4a.url = "github:ryan4yin/nixos-licheepi4a";
