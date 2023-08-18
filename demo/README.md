@@ -5,7 +5,7 @@
 The sdImage built from this flake lacks configuration & cache for compilation.
 Consequently, if you intend to execute an application not present within the sdImage, such as `nix run nixpkgs#cowsay hello`, nix will try to build `cowsay` and all its dependencies from scratch. This can take a long time!
 
-To avoid this, you can deploy your configuration remotely on a high performance machine, this can be done with [colmena](https://github.com/zhaofengli/colmena).
+To avoid this, you can deploy your configuration remotely from a high performance machine, this can be done with [colmena](https://github.com/zhaofengli/colmena).
 
 ## Deploying remotely with colmena
 
