@@ -14,16 +14,16 @@ Default user: `lp4a`, default password: `lp4a`.
 - [x] support for booting from emmc
 - [ ] fix the sdImage's file size
 - [ ] fix the sdImage's auto resize after the first boot.
-- [ ] networkmanager(nmcli/nmtui) failed to compiled.
 - [ ] Failed to enable firewall due to the error: `firewall-start[2300]: iptables: Failed to initialize nft: Protocol not supported`
 - [ ] verify all the hardware features available by th1520
     - [x] ethernet (rj45)
-    - wifi/bluetooth
-    - audio
+    - [x] wifi
+    - [ ] bluetooth
+    - [ ] audio
     - [x] gpio
     - [x] uart/ttl
-    - gpu
-    - npu
+    - gpu(may not be possible)
+    - npu(may not be possible)
     - ...
 
 ## Build u-boot & sdImage
