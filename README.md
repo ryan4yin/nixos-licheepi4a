@@ -54,7 +54,7 @@ After the build is complete, the image will be in `result/sd-image/nixos-licheep
 The image has some problem currently, we need to fix the partition size by the following commands:
 
 ```bash
-cp result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img nixos-lp4a.img
+cp result/sd-image/nixos-licheepi4a-sd-image-*-riscv64-linux.img nixos-lp4a.img
 
 chmod +w nixos-lp4a.img
 # increase img's file size
@@ -102,7 +102,7 @@ sudo fastboot flash uboot u-boot-with-spl.bin
 Finally, flash boot & rootfs into SD card:
 
 ```bash
-mv nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst nixos-lp4a.img.zst
+mv nixos-licheepi4a-sd-image-*-riscv64-linux.img.zst nixos-lp4a.img.zst
 zstd -d nixos-lp4a.img.zst
 # please replace `/dev/sdX` with your SD card's device name
 sudo dd if=nixos-lp4a.img of=/dev/sdX bs=4M status=progress
