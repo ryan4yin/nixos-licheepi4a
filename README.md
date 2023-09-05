@@ -22,8 +22,10 @@ Default user: `lp4a`, default password: `lp4a`.
     - [ ] audio
     - [x] gpio
     - [x] uart/ttl
-    - gpu(may not be possible)
-    - npu(may not be possible)
+    - [ ] gpu
+      - The GPU driver of TH1520 is closed source, and it's high coupling with the operation system, make it quite difficult to make it work on NixOS.
+    - [ ] npu
+      - no one has seem to be done any work related to TH1520's NPU, and even licheepi4a's official docs does not contain any relevant contents(only a TODO).
     - ...
 
 ## Build u-boot & sdImage
