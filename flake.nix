@@ -54,34 +54,35 @@
       #  https://github.com/riscv-non-isa/riscv-toolchain-conventions/blob/master/README.mkd#specifying-the-target-abi-with--mabi
       gcc.abi = "lp64d";
     };
-    overlays = [
-      (self: super: {
-        linuxPackages_thead = super.linuxPackagesFor (super.callPackage ./pkgs/kernel {
-          src = thead-kernel;
-          stdenv = super.gcc13Stdenv;
-          kernelPatches = with super.kernelPatches; [
-            bridge_stp_helper
-            request_key_helper
-          ];
-        });
+    overlay = self: super: {
+      linuxPackages_thead = super.linuxPackagesFor (super.callPackage ./pkgs/kernel {
+        src = thead-kernel;
+        stdenv = super.gcc13Stdenv;
+        kernelPatches = with super.kernelPatches; [
+          bridge_stp_helper
+          request_key_helper
+        ];
+      });
 
-        light_aon_fpga = super.callPackage ./pkgs/firmware/light_aon_fpga.nix {};
-        light_c906_audio = super.callPackage ./pkgs/firmware/light_c906_audio.nix {};
-        thead-opensbi = super.callPackage ./pkgs/opensbi {};
-      })
-    ];
+      light_aon_fpga = super.callPackage ./pkgs/firmware/light_aon_fpga.nix { };
+      light_c906_audio = super.callPackage ./pkgs/firmware/light_c906_audio.nix { };
+      thead-opensbi = super.callPackage ./pkgs/opensbi { };
+    };
     pkgsKernelCross = import nixpkgs {
       localSystem = "x86_64-linux";
       crossSystem = buildFeatures;
 
-      inherit overlays;
+      overlays = [ overlay ];
     };
     pkgsKernelNative = import nixpkgs {
       localSystem = buildFeatures;
 
-      inherit overlays;
-    };
+      overlays = [ overlay ];
+  };
   in {
+    # expose this flake's overlay
+    overlays.default = overlay;
+
     # cross-build an sd-image
     nixosConfigurations.lp4a-cross = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
