@@ -48,21 +48,6 @@
       gcc.abi = "lp64d";
     };
     overlay = self: super: {
-      linuxPackages_thead = super.linuxPackagesFor (super.callPackage ./pkgs/kernel {
-        # according to https://github.com/sipeed/LicheePi4A/blob/pre-view/.gitmodules
-        src = super.fetchFromGitHub {
-          owner = "revyos";
-          repo = "thead-kernel";
-          rev = "9c58afc7addc5a4a5deef24dfe6a4a103549d3da"; # branch lpi4a, 2023-06-24
-          sha256 = "sha256-9R+XY18uDuMWjVzLkg4lTmxDltsvyI51qvm34SNVI4I=";
-        };
-        stdenv = super.gcc13Stdenv;
-        kernelPatches = with super.kernelPatches; [
-          bridge_stp_helper
-          request_key_helper
-        ];
-      });
-
       light_aon_fpga = super.callPackage ./pkgs/firmware/light_aon_fpga.nix {};
       light_c906_audio = super.callPackage ./pkgs/firmware/light_c906_audio.nix {};
       thead-opensbi = super.callPackage ./pkgs/opensbi {};
@@ -75,7 +60,6 @@
     };
     pkgsKernelNative = import nixpkgs {
       localSystem = buildFeatures;
-
       overlays = [overlay];
     };
   in {
@@ -85,7 +69,6 @@
     # cross-build an sd-image
     nixosConfigurations.lp4a-cross = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-
       specialArgs = {
         inherit nixpkgs;
         pkgsKernel = pkgsKernelCross;
@@ -112,6 +95,16 @@
       # the nixpkgs
       pkgsKernelCross = pkgsKernelCross;
       pkgsKernelNative = pkgsKernelNative;
+
+      # the custom kernel, only used for debugging.
+      # use `nix develop .#kernel` to enter the environment with the custom kernel build environment available.
+      # and then use `unpackPhase` to unpack the kernel source code and cd into it.
+      # then you can use `make menuconfig` to configure the kernel.
+      #
+      # problem
+      #   - using `make menuconfig` - Unable to find the ncurses package.
+      #   - using `make revyos_defconfig` - awk not found.
+      kernel = pkgsKernelCross.linuxPackages_thead.kernel.dev;
     };
 
     # use `nix develop .#fhsEnv` to enter the fhs test environment defined here.
