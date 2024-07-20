@@ -119,7 +119,7 @@ Now insert the SD card into the board, and power on, you should see NixOS bootin
 
 ## Flash into eMMC
 
-To flash the image into the board's eMMC, you need to flash the image into the board and start into NixOS first.
+To flash the image into the board's eMMC, you need to flash the image into the SD Card and boot into NixOS via it first.
 
 Then, use the following command to flash the image into the board's eMMC:
 
