@@ -10,55 +10,43 @@
     nixpkgs,
     ...
   }: let
-    buildFeatures = {
+    # g: general purpose: IMAFD_Zicsr_Zifencei
+    # c: compressed instruction
+    # v: vector
+    # we cannot use v extension, as gcc13 support v0.11, gcc 14 support v1.0, but C910 is v0.7
+    gcc-march = "rv64gc" # "v" is not enabled
+              ;
+    # lp64d: long, pointers are 64-bit. GPRs, 64-bit FPRs, and the stack are used for parameter passing.
+    gcc-mabi = "lp64d";
+
+    qemu-cpu = "rv64,g=true,c=true" # ",v=true" is not enabled
+             ;
+
+    crossSystemConfig = {
       config = "riscv64-unknown-linux-gnu";
-
-      # https://nixos.wiki/wiki/Build_flags
-      # this option equals to add `-march=rv64gc` into CFLAGS.
-      # CFLAGS will be used as the command line arguments for the gcc/clang.
-      #
-      # Note: CFLAGS is not used by the kernel build system! so this would not work for the kernel build.
-      #
-      # A little more detail;
-      # RISC-V is a modular ISA, meaning that it only has a mandatory base,
-      # and everything else is an extension.
-      # RV64GC is basically "RISC-V 64-bit, extensions G and C":
-      #
-      #  G: Shorthand for the IMAFDZicsr_Zifencei base and extensions
-      #  C: Standard Extension for Compressed Instructions
-      #
-      # for more details about the shorthand of RISC-V's extension, see:
-      #   https://en.wikipedia.org/wiki/RISC-V#Design
-      #
-      # LicheePi 4A is a high-performance development board which supports extension G and C.
-      # we need to enable them to get revyos's kernel built.
-      gcc.arch = "rv64gc";
-
-      # the same as `-mabi=lp64d` in CFLAGS.
-      #
-      # Note: CFLAGS is not used by the kernel build system! so this would not work for the kernel build.
-      #
-      # lp64d: long, pointers are 64-bit. GPRs, 64-bit FPRs, and the stack are used for parameter passing.
-      #
-      # related docs:
-      #  https://github.com/riscv-non-isa/riscv-toolchain-conventions/blob/master/README.mkd#specifying-the-target-abi-with--mabi
-      gcc.abi = "lp64d";
+      gcc.arch = gcc-march;
+      gcc.abi = gcc-mabi;
     };
+
     overlay = self: super: {
       light_aon_fpga = super.callPackage ./pkgs/firmware/light_aon_fpga.nix {};
       light_c906_audio = super.callPackage ./pkgs/firmware/light_c906_audio.nix {};
       thead-opensbi = super.callPackage ./pkgs/opensbi {};
     };
+
+    pkgsHost = import nixpkgs {
+      localSystem = "x86_64-linux";
+    };
+
     pkgsKernelCross = import nixpkgs {
       localSystem = "x86_64-linux";
-      crossSystem = buildFeatures;
-
-      overlays = [overlay];
+      crossSystem = crossSystemConfig;
+      overlays = [ overlay ];
     };
-    pkgsKernelNative = import nixpkgs {
-      localSystem = buildFeatures;
 
-      overlays = [overlay];
+    pkgsKernelNative = import nixpkgs {
+      localSystem = crossSystemConfig;
+      overlays = [ overlay ];
     };
   in {
     # expose this flake's overlay
@@ -74,10 +62,9 @@
       };
       modules = [
         {
-          # cross-compilation this flake.
-          nixpkgs.crossSystem = {
-            system = "riscv64-linux";
-          };
+          nixpkgs.crossSystem = crossSystemConfig;
+          nixpkgs.overlays = [
+          ];
         }
 
         ./modules/licheepi4a.nix
@@ -125,8 +112,8 @@
           # set the CFLAGS and CPPFLAGS to enable the rv64gc and lp64d.
           # as described here:
           #   https://github.com/graysky2/kernel_compiler_patch#alternative-way-to-define-a--march-option-without-this-patch
-          export KCFLAGS=' -march=rv64gc -mabi=lp64d'
-          export KCPPFLAGS=' -march=rv64gc -mabi=lp64d'
+          export KCFLAGS=' -march=${gcc-march} -mabi=${gcc-mabi}'
+          export KCPPFLAGS=' -march=${gcc-march} -mabi=${gcc-mabi}'
 
           exec bash
         '';
