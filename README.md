@@ -66,7 +66,7 @@ According to the official docs, the flash process of LicheePi 4A is as follows:
 2. Then use the following command to flash the image into the board's eMMC.
    1. The fastboot program can be downloaded directly from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or installed from the package manager.
 
-So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.tar.gz` from [releases](https://github.com/ngc7331/nixos-licheepi4a/releases), or build them by yourself.
+So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.tar.zst` from [releases](https://github.com/ngc7331/nixos-licheepi4a/releases), or build them by yourself.
 
 Then, flash into the board's spl partition and uboot partition:
 
@@ -81,7 +81,7 @@ sudo fastboot flash uboot u-boot-with-spl.bin
 Finally, flash boot & rootfs into SD card:
 
 ```bash
-tar -xvf nixos-licheepi4a-sd-image-*-riscv64-linux.img.tar.gz
+tar -xvf nixos-licheepi4a-sd-image-*-riscv64-linux.img.tar.zst
 # please replace `/dev/sdX` with your SD card's device name
 sudo dd if=./nixos-licheepi4a-sd-image-*-riscv64-linux.img of=/dev/sdX bs=4M status=progress
 

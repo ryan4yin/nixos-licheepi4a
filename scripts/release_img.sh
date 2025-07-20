@@ -43,7 +43,7 @@ sudo losetup -d "${DEV}"
 
 echo
 echo "Creating archive"
-tar -czvf "./release/${IMAGE_NAME}.tar.gz" "${IMAGE}"
+tar -I "zstd -T0 -9" -cvf "./release/${IMAGE_NAME}.tar.zst" "${IMAGE}"
 
 echo
 echo "Cleaning up"
