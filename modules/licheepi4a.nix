@@ -1,9 +1,4 @@
 { lib, pkgs, pkgsKernel, ... }: {
-
-  # =========================================================================
-  #      Board specific configuration
-  # =========================================================================
-
   boot = {
     kernelPackages = pkgsKernel.linuxPackages_latest;
 
@@ -62,56 +57,48 @@
   # =========================================================================
 
   nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
+    experimental-features = [ "nix-command" "flakes" ];
   };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # === System utils ===
-    git
-    curl
-    neofetch
-    lm_sensors
-    htop
-    zsh
+    # === system ===
+    # utils
+      neofetch
+      htop
+    # device
+      minicom
+      lm_sensors
+      i2c-tools
+    # network
+      dnsutils
+      ethtool
+    # kernel
+      kmod
 
-    # === Networking ===
-    tailscale
-    proxychains
-
-    # === Dev ===
-    # nix-ld # nix-ld 2.0.0+ does not support riscv64 now
-    docker
-    python3
-    gcc
-    gnumake
-    cmake
+    # === dev ===
+    # version control
+      git
+    # languages
+      python3
     # openjdk # not support riscv64 now
-
-    # === Peripherals ===
-    mtdutils
-    i2c-tools
-    minicom
+      gcc
   ];
 
   # Enable the OpenSSH daemon.
   services.openssh = {
-    enable = true;
+    enable = lib.mkDefault true;
     settings = {
-      X11Forwarding = true;
-      PasswordAuthentication = true;
+      X11Forwarding = lib.mkDefault true;
+      PasswordAuthentication = lib.mkDefault true;
     };
-    openFirewall = true;
+    openFirewall = lib.mkDefault true;
   };
 
-  programs.zsh.enable = true;
-  users.defaultUserShell = pkgs.zsh;
-
   # Fix for vscode-server, etc.
-  # programs.nix-ld.enable = true; # nix-ld 2.0.0+ does not support riscv64 now
+  # programs.nix-ld.enable = lib.mkDefault true; # nix-ld 2.0.0+ does not support riscv64 now
 
-  virtualisation.docker.enable = true;
-
-  services.tailscale.enable = true;
+  # Fix for /bin/xxx shebang
+  # services.envfs.enable = lib.mkDefault true; # envfs does not support riscv64 now
 }

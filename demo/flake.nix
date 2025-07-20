@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixos-licheepi4a.url = "github:ryan4yin/nixos-licheepi4a";
+    nixos-licheepi4a.url = "github:ngc7331/nixos-licheepi4a";
   };
 
   outputs = { self, nixpkgs, nixos-licheepi4a, ... } @ inputs: let
@@ -20,7 +20,7 @@
 
       lp4a = { name, nodes, ... }: {
         # Set this ip to your licheepi4a board ip address.
-        deployment.targetHost = "192.168.5.104";
+        deployment.targetHost = "licheepi4a";
         deployment.targetUser = "root";
 
         imports = [

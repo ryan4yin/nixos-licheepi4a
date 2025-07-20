@@ -215,7 +215,14 @@ See [Debug.md](./Debug.md)
 
 ## Custom Deployment
 
-You can use this flake as an input to build your own configuration.
+The default image is a minimal NixOS system, which may not include all the applications you need.
+
+You can clone this repository and modify `modules/licheepi4a.nix` to add your desired applications and configurations, and, follow the steps in [Build u-boot & sdImage](#build-u-boot--sdimage) to build your custom image. Then, you can flash it into your SD card or eMMC as described in [Flash into SD card](#flash-into-sd-card) and [Flash into eMMC](#flash-into-emmc).
+
+Also, you can flash the default image and then modify the configuration on the board directly, you're able to use `nixos-rebuild switch` to apply your changes as a normal NixOS system, but this can be slow due to the limited resources of the board.
+
+As an alternative, you can also use remote deployment to deploy your custom configuration to the board without re-building or re-flashing the image, this will keep your filesystem (e.g. `/home/user`) intact.
+
 Here is an example configuration that you can use as a starting point: [Demo - Deployment](./demo)
 
 ## How this repo works
