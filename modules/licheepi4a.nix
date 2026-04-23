@@ -1,12 +1,22 @@
-{ lib, pkgs, pkgsKernel, ... }: {
+{
+  lib,
+  pkgs,
+  pkgsKernel,
+  ...
+}:
+{
   boot = {
-    kernelPackages = pkgsKernel.linuxPackages_latest;
+    kernelPackages = pkgsKernel.linuxPackages_thead;
 
     initrd.includeDefaultModules = false;
     initrd.availableKernelModules = lib.mkForce [
-      "ext4" "sd_mod" "mmc_block" "spi_nor"
+      "ext4"
+      "sd_mod"
+      "mmc_block"
+      "spi_nor"
       "xhci_hcd"
-      "usbhid" "hid_generic"
+      "usbhid"
+      "hid_generic"
     ];
   };
 
@@ -33,14 +43,13 @@
     };
     enableRedistributableFirmware = true;
 
-    # TODO GPU driver
     graphics = {
-      enable = false;
+      enable = true;
     };
 
-    # firmwares
     firmware = [
-      # TODO add GPU firmware
+      pkgsKernel.light_aon_fpga
+      pkgsKernel.light_c906_audio
     ];
   };
 
@@ -57,7 +66,10 @@
   # =========================================================================
 
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 
   # List packages installed in system profile. To search, run:
@@ -65,25 +77,25 @@
   environment.systemPackages = with pkgs; [
     # === system ===
     # utils
-      neofetch
-      htop
+    fastfetch
+    htop
     # device
-      minicom
-      lm_sensors
-      i2c-tools
+    minicom
+    lm_sensors
+    i2c-tools
     # network
-      dnsutils
-      ethtool
+    dnsutils
+    ethtool
     # kernel
-      kmod
+    kmod
 
     # === dev ===
     # version control
-      git
+    git
     # languages
-      python3
+    python3
     # openjdk # not support riscv64 now
-      gcc
+    gcc
   ];
 
   # Enable the OpenSSH daemon.

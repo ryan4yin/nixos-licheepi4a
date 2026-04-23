@@ -4,13 +4,13 @@
 }:
 stdenv.mkDerivation {
   pname = "light_c906_audio-firmware";
-  version = "2025.04.23";
+  version = "2025.05.10";
 
   src = fetchFromGitHub {
     owner = "revyos";
     repo = "th1520-boot-firmware";
-    rev = "44ec4e1cc82141963842ec45db0d1617f9f07e75"; # master on 2025.04.23
-    sha256 = "sha256-MjiSpdySqCr4j9i3RPJ08mBHCQAy1fA9m787hKEIwUA=";
+    rev = "725756411ecc20f2c2dbc5ea6b8e5aacc6f83aad"; # master on 2025-05-10
+    sha256 = "sha256-pXRdMdtqzB9ytWSqyINSsIZhymiMqZOv2Gvz6194jM0=";
   };
 
   buildCommand = ''

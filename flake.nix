@@ -2,7 +2,7 @@
   description = "NixOS running on LicheePi 4A";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
   outputs = {
@@ -28,10 +28,12 @@
       gcc.abi = gcc-mabi;
     };
 
-    overlay = self: super: {
-      light_aon_fpga = super.callPackage ./pkgs/firmware/light_aon_fpga.nix {};
-      light_c906_audio = super.callPackage ./pkgs/firmware/light_c906_audio.nix {};
-      thead-opensbi = super.callPackage ./pkgs/opensbi {};
+    overlay = final: prev: {
+      light_aon_fpga = final.callPackage ./pkgs/firmware/light_aon_fpga.nix {};
+      light_c906_audio = final.callPackage ./pkgs/firmware/light_c906_audio.nix {};
+      linux_thead = final.callPackage ./pkgs/linux {};
+      linuxPackages_thead = final.linuxPackagesFor final.linux_thead;
+      thead-opensbi = final.callPackage ./pkgs/opensbi {};
     };
 
     pkgsHost = import nixpkgs {
@@ -74,6 +76,7 @@
     };
 
     packages.x86_64-linux = {
+      linux = pkgsKernelCross.linux_thead;
       # u-boot & sdImage for boot from sdcard.
       uboot = pkgsKernelCross.callPackage ./pkgs/u-boot {};
       sdImage = self.nixosConfigurations.lp4a-cross.config.system.build.sdImage;

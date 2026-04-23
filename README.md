@@ -146,15 +146,10 @@ Also refer to [discusstion page](https://github.com/ngc7331/nixos-licheepi4a/dis
 
 ## Kernel
 
-23.11 / 24.05 - based branches are using linux kernel 5.10 from revyos/thead-kernel.
+This branch uses RevyOS's `revyos/linux` `revyos/7.0.y` kernel together with
+the latest available TH1520 U-Boot, OpenSBI and boot firmware pins from RevyOS.
 
-But it seems that the kernel has compatibility issues with glibc 2.40, known issues include:
-
-- `openssl` will complain any certificate is `Not yet valid`, so `curl` etc. will not work on https URLs.
-
-On the other hand, mainline kernel 6.5+ has introduced support for LicheePi 4A.
-
-Therefore, 24.11 and later branches will be using nixpkgs's `linuxPackages_latest` kernel and default config.
+The flake input also tracks `nixos-unstable`.
 
 ## Vendor extension
 

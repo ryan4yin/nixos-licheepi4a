@@ -2,7 +2,7 @@
   description = "NixOS configuration for licheepi4a remote deployment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-licheepi4a.url = "github:ngc7331/nixos-licheepi4a";
   };
 
@@ -44,4 +44,3 @@
     };
   };
 }
-
