@@ -8,14 +8,14 @@
 
 buildLinux rec {
   pname = "linux-th1520";
-  version = "7.0.0";
+  version = "7.0.1";
   modDirVersion = version;
 
   src = fetchFromGitHub {
     owner = "revyos";
     repo = "linux";
-    rev = "5541c6584179d180aa921ef2f3c01d063e965b11"; # revyos/7.0.y on 2026-04-22
-    sha256 = "sha256-1zyDp9Tgc06TMhMucNTiJq9XSzPHWxrJbCE5YriB9QA=";
+    rev = "01805654d228b07b8d96ffa1ea6aca798c98d7dc"; # revyos/7.0.y on 2026-04-23
+    sha256 = "sha256-6x+sfUh+f9ZFKN8kIu2+Mt09W1+RmqsGsSvOWGD4Bg4=";
   };
 
   defconfig = "debian_defconfig";
@@ -24,6 +24,10 @@ buildLinux rec {
     bridge_stp_helper
     request_key_helper
   ];
+
+  structuredExtraConfig = with lib.kernel; {
+    DRM_POWERVR = module;
+  };
 
   extraMeta = {
     branch = "revyos/7.0.y";

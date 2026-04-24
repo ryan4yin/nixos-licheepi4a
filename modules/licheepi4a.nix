@@ -8,9 +8,18 @@
   boot = {
     kernelPackages = pkgsKernel.linuxPackages_thead;
 
+    extraModprobeConfig = ''
+      options powervr exp_hw_support=1
+    '';
+
     initrd.includeDefaultModules = false;
+    initrd.systemd.emergencyAccess = true;
     initrd.availableKernelModules = lib.mkForce [
       "ext4"
+      "autofs4"
+      "sdhci"
+      "sdhci_pltfm"
+      "sdhci_of_dwcmshc"
       "sd_mod"
       "mmc_block"
       "spi_nor"
@@ -50,7 +59,13 @@
     firmware = [
       pkgsKernel.light_aon_fpga
       pkgsKernel.light_c906_audio
+      pkgsKernel.powervr_rogue
     ];
+  };
+
+  environment.sessionVariables = {
+    PVR_I_WANT_A_BROKEN_DRIVER = "1";
+    PVR_I_WANT_A_BROKEN_VULKAN_DRIVER = "1";
   };
 
   # This value determines the NixOS release from which the default

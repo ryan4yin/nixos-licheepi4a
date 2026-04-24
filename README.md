@@ -132,12 +132,12 @@ After the flash is complete, remove the SD card and reboot, you should see NixOS
 
 ## TODOs & Known issue
 
-- [ ] fix the sdImage's file size
-- [ ] fix the sdImage's auto resize after the first boot.
+- [ x ] fix the sdImage's file size
+- [ x ] fix the sdImage's auto resize after the first boot.
 - [ ] verify all the hardware features available by th1520
   - [ ] bluetooth
   - [ ] audio
-  - [ ] gpu
+  - [ x ] gpu
     - The GPU driver of TH1520 is closed source, and it's high coupling with the operation system, make it quite difficult to make it work on NixOS.
   - [ ] npu
     - no one has seem to be done any work related to TH1520's NPU, and even licheepi4a's official docs does not contain any relevant contents(only a TODO).
