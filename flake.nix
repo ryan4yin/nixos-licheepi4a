@@ -2,7 +2,7 @@
   description = "NixOS running on LicheePi 4A";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:moeleak/nixpkgs/nixos-licheepi4a-unstable";
   };
 
   outputs =
@@ -12,9 +12,6 @@
       ...
     }:
     let
-      mesaVersion = "26.1.0-rc2";
-      mesaHash = "sha256-FSFTq1a2CHs7AR9QVZ2CpNEEIP2pEyyCcXJrIh/hJbQ=";
-
       # g: general purpose: IMAFD_Zicsr_Zifencei
       # c: compressed instruction
       # v: vector
@@ -31,20 +28,6 @@
       };
 
       overlay = final: prev: {
-        mesa = prev.mesa.overrideAttrs (oldAttrs: {
-          version = mesaVersion;
-          src = final.fetchFromGitLab {
-            domain = "gitlab.freedesktop.org";
-            owner = "mesa";
-            repo = "mesa";
-            rev = "mesa-${mesaVersion}";
-            hash = mesaHash;
-          };
-          meta = oldAttrs.meta // {
-            changelog = "https://docs.mesa3d.org/release-calendar.html";
-          };
-        });
-
         light_aon_fpga = final.callPackage ./pkgs/firmware/light_aon_fpga.nix { };
         light_c906_audio = final.callPackage ./pkgs/firmware/light_c906_audio.nix { };
         linux_thead = final.callPackage ./pkgs/linux { };

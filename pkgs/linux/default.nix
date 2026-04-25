@@ -27,6 +27,7 @@ buildLinux rec {
 
   structuredExtraConfig = with lib.kernel; {
     DRM_POWERVR = module;
+    PSTORE = yes;
   };
 
   extraMeta = {
