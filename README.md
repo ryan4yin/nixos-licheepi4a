@@ -94,16 +94,16 @@ After the flash is complete, remove the SD card and reboot, you should see NixOS
 
 > Due to the problem of the image, you need to resize the rootfs manually after the first boot.
 
-## TODOs & Known issue
+## TODOs & Known Issues
 
-- [ x ] fix the sdImage's file size
-- [ x ] fix the sdImage's auto resize after the first boot.
-- [ ] verify all the hardware features available by th1520
-  - [ ] bluetooth
-  - [ ] audio
-  - [ x ] gpu
-  - [ ] npu
-    - no one has seem to be done any work related to TH1520's NPU, and even licheepi4a's official docs does not contain any relevant contents(only a TODO).
+- [x] Fix the `sdImage` file size.
+- [x] Fix `sdImage` auto-resizing after the first boot.
+- [ ] Verify all hardware features available on the TH1520.
+  - [ ] Bluetooth
+  - [ ] Audio
+  - [x] GPU
+  - [ ] NPU
+    - No one seems to have done any work related to the TH1520's NPU, and even the LicheePi 4A official docs do not contain any relevant content, only a TODO.
 
 ## Kernel
 
