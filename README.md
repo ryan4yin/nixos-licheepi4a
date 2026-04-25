@@ -151,6 +151,10 @@ the latest available TH1520 U-Boot, OpenSBI and boot firmware pins from RevyOS.
 
 The flake input also tracks `nixos-unstable`.
 
+By default, this repo uses the `thead/th1520-lichee-pi-4a-16g.dtb` device tree.
+If your board is not the 16G variant, change `hardware.deviceTree.name` in
+`modules/licheepi4a.nix` back to `thead/th1520-lichee-pi-4a.dtb`.
+
 ## Vendor extension
 
 Risc-v is a modulized architecture, it has loads of standard extensions and also allows manufacturers to add their own extensions.
