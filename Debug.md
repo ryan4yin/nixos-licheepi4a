@@ -19,6 +19,8 @@ First, connect the USB to TTL cable to the UART0 interface of the LicheePi 4A. T
 ![](./_img/lp4a-pinout-debuglog-1.webp)
 ![](./_img/lp4a-pinout-debuglog-2.webp)
 
+**Warning:** Do NOT connect the wire to the VCC pin. The wiring shown in the images above is incorrect and may damage your device.
+
 If everything is normal, you should be able to see the startup log at this point. An example is shown below:
 
 ```
