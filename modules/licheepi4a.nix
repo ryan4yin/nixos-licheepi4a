@@ -47,7 +47,44 @@
       # https://github.com/chainsx/fedora-riscv-builder/blob/51841d872b/config/config-emmc.txt
       name = "thead/th1520-lichee-pi-4a-16g.dtb";
       overlays = [
-        # custom deviceTree here
+        {
+          name = "rtl8723ds";
+          filter = "thead/th1520-lichee-pi-4a";
+          dtsText = ''
+            /dts-v1/;
+            /plugin/;
+
+            #include <dt-bindings/gpio/gpio.h>
+
+            / {
+              compatible = "sipeed,lichee-pi-4a";
+            };
+
+            &{/} {
+              wifi_pwrseq: wifi-pwrseq {
+                compatible = "mmc-pwrseq-simple";
+                reset-gpios = <&ioexp2 4 GPIO_ACTIVE_LOW>;
+                post-power-on-delay-ms = <200>;
+              };
+            };
+
+            &sdio1 {
+              #address-cells = <1>;
+              #size-cells = <0>;
+              bus-width = <4>;
+              max-frequency = <198000000>;
+              cap-sdio-irq;
+              keep-power-in-suspend;
+              mmc-pwrseq = <&wifi_pwrseq>;
+              non-removable;
+              status = "okay";
+
+              wifi@1 {
+                reg = <1>;
+              };
+            };
+          '';
+        }
       ];
     };
     enableRedistributableFirmware = true;
