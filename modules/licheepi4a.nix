@@ -78,10 +78,6 @@
               mmc-pwrseq = <&wifi_pwrseq>;
               non-removable;
               status = "okay";
-
-              wifi@1 {
-                reg = <1>;
-              };
             };
           '';
         }
