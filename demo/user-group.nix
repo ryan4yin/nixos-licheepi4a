@@ -1,13 +1,14 @@
-# NOTE: make sure to update your password and public key in this file
-# NOTE: to generate a hashed password, you can use the `mkpasswd` command.
+# Default account: Unix user `user`, password lp4a (see README.md).
+# Public key below is a valid-format placeholder; the private key is not in this repo — replace
+# with your own `ssh-ed25519` line (from ~/.ssh/id_ed25519.pub or similar) before relying on SSH keys.
+# To generate a new hashed password: `mkpasswd`.
 
 let
-  username = "lp4a";
+  username = "user";
   hostname = "licheepi4a";
-  # default password is "lp4a"
   hashedPassword = "$y$j9T$mTIe/80yqh53danHYbUkP1$2TYCUsFKnkBnHG6pArOv9t.e2ofxO.j1MIt/6rB05P1";
-  # default public key is my own, change it to your own public key!
-  publickey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGfKhCawAW4dQz5OtDGZIlKvuNx3+Iovw5X/251Wfxnq user@dev";
+  # Placeholder only (no matching private key shipped here).
+  publickey = "ssh-ed25519 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX demo-placeholder-replace-me";
 in
 {
   networking.hostName = hostname;
@@ -28,7 +29,6 @@ in
     ];
   };
 
-  # also add public key to root user
   users.users.root.openssh.authorizedKeys.keys = [
     publickey
   ];

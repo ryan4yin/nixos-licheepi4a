@@ -4,7 +4,14 @@ This repo contains the code to get NixOS running on LicheePi 4A.
 
 ![neofetch](./_img/nixos-licheepi-fastfetch.png)
 
-Default user: `lp4a`, default password: `lp4a`.
+### Default login (development image)
+
+| | |
+| --- | --- |
+| User | `user` |
+| Password | `lp4a` |
+
+Change the password and SSH settings before exposing the board to any network you do not fully trust.
 
 ## Build u-boot & sdImage
 
@@ -67,10 +74,10 @@ Then, use the following command to flash the image into the board's eMMC:
 
 ```bash
 # upload the sdImage to the NixOS system on the board
-scp nixos-lp4a.img lp4a@<ip-of-your-board>:~/
+scp nixos-lp4a.img user@<ip-of-your-board>:~/
 
 # login to the board via ssh or serial port
-ssh lp4a@<ip-of-your-board>
+ssh user@<ip-of-your-board>
 
 # check all the block devices
 # you should see mmcblk0(eMMC) & mmcblk1(SD card)
