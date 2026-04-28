@@ -1,0 +1,25 @@
+From 5fab4576abeb2370d8ef1ee8199ce9488edb75e7 Mon Sep 17 00:00:00 2001
+From: ngc7331 <ngc7331@outlook.com>
+Date: Wed, 23 Apr 2025 14:33:19 +0800
+Subject: [PATCH] feat: use mmcbootpart=1 for nixos
+
+---
+ include/configs/light-c910.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/light-c910.h b/include/configs/light-c910.h
+index 51d6618..885a3f5 100644
+--- a/include/configs/light-c910.h
++++ b/include/configs/light-c910.h
+@@ -161,7 +161,7 @@
+ 	"kernel_addr_r=0x00200000\0" \
+ 	"kdump_buf=180M\0" \
+ 	"boottype=mmc\0" \
+-	"mmcbootpart=2\0" \
++	"mmcbootpart=1\0" \
+ 	"default_mmcdev=1\0" \
+ 	"emmc_dev=0\0" \
+ 	"sdcard_dev=1\0" \
+-- 
+2.47.2
+

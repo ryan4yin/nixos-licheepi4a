@@ -2,40 +2,17 @@
 
 This repo contains the code to get NixOS running on LicheePi 4A.
 
-![](./_img/nixos-licheepi-neofetch.webp)
+![neofetch](./_img/nixos-licheepi-fastfetch.png)
 
 Default user: `lp4a`, default password: `lp4a`.
-
-## TODO
-
-- [x] release an image
-- [x] build opensbi from source
-- [x] build u-boot from source
-- [x] support for booting from emmc
-- [ ] fix the sdImage's file size
-- [ ] fix the sdImage's auto resize after the first boot.
-- [ ] Failed to enable firewall due to the error: `firewall-start[2300]: iptables: Failed to initialize nft: Protocol not supported`
-- [ ] verify all the hardware features available by th1520
-    - [x] ethernet (rj45)
-    - [x] wifi
-    - [ ] bluetooth
-    - [ ] audio
-    - [x] gpio
-    - [x] uart/ttl
-    - [ ] gpu
-      - The GPU driver of TH1520 is closed source, and it's high coupling with the operation system, make it quite difficult to make it work on NixOS.
-    - [ ] npu
-      - no one has seem to be done any work related to TH1520's NPU, and even licheepi4a's official docs does not contain any relevant contents(only a TODO).
-    - ...
 
 ## Build u-boot & sdImage
 
 > You can skip this step if you just want to flash the prebuilt image.
 
-
 Build u-boot:
 
-```shell
+```bash
 nix build .#uboot -L --show-trace
 ```
 
@@ -43,40 +20,11 @@ After the build is complete, the u-boot will be in `result/u-boot-with-spl.bin`,
 
 Build sdImage:
 
-```shell
-# I have uploaded the build cache to cachix, you can use it to speed up builds.
-# which may take a long time without my cache, about 2 hours on my machine
-nix run nixpkgs#cachix -- use licheepi4a
-
+```bash
 nix build .#sdImage -L --show-trace
 ```
 
 After the build is complete, the image will be in `result/sd-image/nixos-licheepi4a-sd-image-xxx-riscv64-linux.img`.
-
-The image has some problem currently, we need to fix the partition size by the following commands:
-
-```bash
-cp result/sd-image/nixos-licheepi4a-sd-image-*-riscv64-linux.img nixos-lp4a.img
-
-chmod +w nixos-lp4a.img
-# increase img's file size
-dd if=/dev/zero bs=1M count=16 >> nixos-lp4a.img
-sudo losetup --find --partscan nixos-lp4a.img
-
-# check rootfs's status, it's broken.
-sudo fsck /dev/loop0p2
-
-echo w | sudo fdisk /dev/loop0
-# increase the rootfs's partition size & file system size
-nix shell nixpkgs#cloud-utils
-sudo growpart /dev/loop0 2
-
-# check rootfs's status again, it should be normal now.
-sudo fsck /dev/loop0p2
-
-# umount the image file
-sudo losetup -d /dev/loop0
-```
 
 ## Flash into SD card
 
@@ -89,7 +37,7 @@ According to the official docs, the flash process of LicheePi 4A is as follows:
 2. Then use the following command to flash the image into the board's eMMC.
    1. The fastboot program can be downloaded directly from [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools), or installed from the package manager.
 
-So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.zst` from [releases](https://github.com/ryan4yin/nixos-licheepi4a/releases), or build them by yourself.
+So first, download the prebuilt `u-boot-with-spl.bin` & `nixos-licheepi4a-sd-image-xxx-riscv64-linux.img.tar.zst` from releases, or build them by yourself.
 
 Then, flash into the board's spl partition and uboot partition:
 
@@ -104,13 +52,7 @@ sudo fastboot flash uboot u-boot-with-spl.bin
 Finally, flash boot & rootfs into SD card:
 
 ```bash
-mv nixos-licheepi4a-sd-image-*-riscv64-linux.img.zst nixos-lp4a.img.zst
-zstd -d nixos-lp4a.img.zst
-# please replace `/dev/sdX` with your SD card's device name
-sudo dd if=nixos-lp4a.img of=/dev/sdX bs=4M status=progress
-
-# fix the wrong physical sector size
-sudo parted /dev/sdb
+$ scripts/flash_sd.sh
 ```
 
 Now insert the SD card into the board, and power on, you should see NixOS booting.
@@ -152,13 +94,42 @@ After the flash is complete, remove the SD card and reboot, you should see NixOS
 
 > Due to the problem of the image, you need to resize the rootfs manually after the first boot.
 
+## TODOs & Known Issues
+
+- [x] Fix the `sdImage` file size.
+- [x] Fix `sdImage` auto-resizing after the first boot.
+- [ ] Verify all hardware features available on the TH1520.
+  - [ ] Bluetooth
+  - [ ] Audio
+  - [x] GPU
+  - [ ] NPU
+    - No one seems to have done any work related to the TH1520's NPU, and even the LicheePi 4A official docs do not contain any relevant content, only a TODO.
+
+## Kernel
+
+This branch uses RevyOS's `revyos/linux` `revyos/7.0.y` kernel together with
+the latest available TH1520 U-Boot, OpenSBI and boot firmware pins from RevyOS.
+
+The flake input also tracks `nixos-unstable`.
+
+By default, this repo uses the `thead/th1520-lichee-pi-4a-16g.dtb` device tree.
+If your board is not the 16G variant, change `hardware.deviceTree.name` in
+`modules/licheepi4a.nix` back to `thead/th1520-lichee-pi-4a.dtb`.
+
 ## Debug via serial port
 
 See [Debug.md](./Debug.md)
 
 ## Custom Deployment
 
-You can use this flake as an input to build your own configuration.
+The default image is a minimal NixOS system, which may not include all the applications you need.
+
+You can clone this repository and modify `modules/licheepi4a.nix` to add your desired applications and configurations, and, follow the steps in [Build u-boot & sdImage](#build-u-boot--sdimage) to build your custom image. Then, you can flash it into your SD card or eMMC as described in [Flash into SD card](#flash-into-sd-card) and [Flash into eMMC](#flash-into-emmc).
+
+Also, you can flash the default image and then modify the configuration on the board directly, you're able to use `nixos-rebuild switch` to apply your changes as a normal NixOS system, but this can be slow due to the limited resources of the board.
+
+As an alternative, you can also use remote deployment to deploy your custom configuration to the board without re-building or re-flashing the image, this will keep your filesystem (e.g. `/home/user`) intact.
+
 Here is an example configuration that you can use as a starting point: [Demo - Deployment](./demo)
 
 ## How this repo works
@@ -170,18 +141,17 @@ The basic idea of this repo is to use revyos's kernel, u-boot and opensbi, with 
 
 RevyOS's kernel, u-boot and opensbi:
 
-- https://github.com/revyos/thead-kernel.git
-- https://github.com/revyos/thead-u-boot.git
-- https://github.com/revyos/thead-opensbi.git
+- <https://github.com/revyos/linux.git>
+- <https://github.com/revyos/thead-u-boot.git>
+- <https://github.com/revyos/thead-opensbi.git>
 
 And other efforts to bring Fedora to LicheePi 4A:
 
-- https://github.com/chainsx/fedora-riscv-builder
+- <https://github.com/chainsx/fedora-riscv-builder>
 
 And other efforts to bring NixOS to RISC-V:
 
-- https://github.com/zhaofengli/nixos-riscv64
-- https://github.com/NickCao/nixos-riscv
+- <https://github.com/zhaofengli/nixos-riscv64>
+- <https://github.com/NickCao/nixos-riscv>
 
 Special thanks to @NickCao,  @revyos, @chainsx and @zhaofengli.
-

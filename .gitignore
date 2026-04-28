@@ -11,6 +11,7 @@ result-*
 # Personal scripts
 nix-build/
 outputs/
+release/
 *.ext4
 *.img
 *.log
