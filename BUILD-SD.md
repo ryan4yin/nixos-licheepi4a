@@ -215,10 +215,6 @@ It then:
 > ⚠️ Double-check the target before confirming — `dd` will overwrite
 > *anything* you point at, including your laptop's NVMe.
 
-> The README's note that you must "resize the rootfs manually after the
-> first boot" is stale — `flash_sd.sh` already does it (and the TODO is
-> checked off in `README.md`).
-
 ## 7. First boot
 
 1. Power off, unplug USB-C.

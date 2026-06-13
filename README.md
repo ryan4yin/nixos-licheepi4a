@@ -64,8 +64,6 @@ $ scripts/flash_sd.sh
 
 Now insert the SD card into the board, and power on, you should see NixOS booting.
 
-> Due to the problem of the image, you need to resize the rootfs manually after the first boot.
-
 ## Flash into eMMC
 
 To flash the image into the board's eMMC, you need to flash the image into the SD Card and boot into NixOS via it first.
@@ -98,8 +96,6 @@ sudo dd if=nixos-lp4a.img of=/dev/mmcblk0 bs=4M status=progress
 ```
 
 After the flash is complete, remove the SD card and reboot, you should see NixOS booting from eMMC.
-
-> Due to the problem of the image, you need to resize the rootfs manually after the first boot.
 
 ## TODOs & Known Issues
 
